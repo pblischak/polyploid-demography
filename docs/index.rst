@@ -6,11 +6,13 @@
 Demographic Inference in Polyploids
 ===================================
 
+Documentation
+=============
+
 .. toctree::
    :maxdepth: 1
-   :caption: Contents:
 
-
+   slim.rst
 
 Indices and tables
 ==================
