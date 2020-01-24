@@ -1,0 +1,8 @@
+*.pyc
+.DS_Store
+*~
+.*~
+old*
+docs/_build
+docs/_static
+docs/_template
