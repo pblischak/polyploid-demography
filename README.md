@@ -1,3 +1,5 @@
+[![Documentation Status](https://readthedocs.org/projects/polyploid-demography/badge/?version=latest)](https://polyploid-demography.readthedocs.io/en/latest/?badge=latest)
+
 ## Demographic Inference in Polyploids
 
 This repository hosts all of the code for testing models for demographic inference
