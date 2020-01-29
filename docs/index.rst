@@ -13,6 +13,8 @@ Documentation
    :maxdepth: 1
 
    slim.rst
+   bnapus_snp.rst
+   bnapus_demog.rst
 
 Indices and tables
 ==================
