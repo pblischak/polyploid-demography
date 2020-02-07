@@ -15,6 +15,8 @@ Documentation
    slim.rst
    bnapus_snp.rst
    bnapus_demog.rst
+   arenosa_snp.rst
+   arenosa_demog.rst
 
 Indices and tables
 ==================

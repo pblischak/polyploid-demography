@@ -1,12 +1,12 @@
 .. _BnapusSNP:
 
 Variant Calling in *Brassica napus*
-========================================
+===================================
 
 
 
 Obtaining the Reference Genome
--------------------------------------------
+------------------------------
 
 .. code-block:: bash
 
