@@ -14,13 +14,8 @@ Demographic Analyses in *Arabidopsis arenosa*
   from glob import glob
 
   if __name__ == "__main__":
-    vcf_dicts = [dadi.Misc.make_data_dict_vcf(f) for f in glob("*.vcf")]
-    spectra   = [dadi.Spectrum.from_data_dict(dd) for dd in vcf_dicts]
-    fs        = spectra[0]
+    vcf_dicts = [dadi.Misc.make_data_dict_vcf(f, "arenosa_popinfo.txt") for f in glob("*.vcf")]
+    spectra   = [dadi.Spectrum.from_data_dict(dd, ['arenosa'], projections=[20]) for dd in vcf_dicts]
+    fs        = specta[0]
     for s in range(1,len(spectra)):
         fs += spectra[s]
-
-**References**
-
-Monnahan, P. *et al*. 2019. Pervasive population genomic consequences of genome duplication in *Arabidopsis arenosa*.
-*Nature Ecology & Evolution* 3:457--468.

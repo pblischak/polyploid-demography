@@ -35,11 +35,33 @@ We got the reference genome (v1.0) from Phytozome, along with v2.1 of the gene a
 Getting and Processing FASTQ Files
 ----------------------------------
 
+
+
 Read Mapping with BWA
 ---------------------
 
-Preprocessing BAM Files with GATK
----------------------------------
+
+
+Preprocessing BAM Files with Sambamba
+-------------------------------------
+
+
 
 Variant Calling with GATK HaplotypeCaller
 -----------------------------------------
+
+.. code-block:: bash
+
+  for sample in ArenosaSamples.txt
+  do
+    gatk HaplotypeCaller -R genome/alyrata.fasta \
+      -I bam/${sample}.bam -O vcf/${sample}.g.vcf.gz \
+      -ERC GVCF
+  done
+
+----
+
+**References**
+
+Monnahan, P. *et al*. 2019. Pervasive population genomic consequences of genome
+duplication in *Arabidopsis arenosa*. *Nature Ecology & Evolution* 3:457--468.

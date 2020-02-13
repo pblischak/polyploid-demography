@@ -14,8 +14,8 @@ Demographic Analyses in *Brassica napus*
   from glob import glob
 
   if __name__ == "__main__":
-    vcf_dicts = [dadi.Misc.make_data_dict_vcf(f) for f in glob("*.vcf")]
-    spectra   = [dadi.Spectrum.from_data_dict(dd) for dd in vcf_dicts]
-    fs        = spectra[0]
+    vcf_dicts = [dadi.Misc.make_data_dict_vcf(f,"bnapus_popinfo.txt") for f in glob("*.vcf")]
+    spectra   = [dadi.Spectrum.from_data_dict(dd, ['bnapus'], projections=[20]) for dd in vcf_dicts]
+    fs        = specta[0]
     for s in range(1,len(spectra)):
         fs += spectra[s]
