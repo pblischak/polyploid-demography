@@ -9,7 +9,17 @@ to perform forward simulations.
 Autotetraploid Simulations
 --------------------------
 
+.. code-block:: bash
 
+  perl optimizeLL.pl 1000000 500 -t 0.005 -r 0.005 -B 0.2 -v
+
+.. code-block:: bash
+
+  for r in {1..50}
+  do
+    sfs_code 1 100 -t 0.005 -r 0.005 -L 200 5000 \
+      -P 4 -p 1 > autotetraploid_${r}.txt
+  done
 
 Allotetraploid Simulations
 --------------------------
