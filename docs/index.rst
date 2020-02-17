@@ -12,7 +12,7 @@ Documentation
 .. toctree::
    :maxdepth: 1
 
-   slim.rst
+   simulations.rst
    bnapus_snp.rst
    bnapus_demog.rst
    arenosa_snp.rst
