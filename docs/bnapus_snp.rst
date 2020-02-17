@@ -141,24 +141,42 @@ Variant Calling with GATK HaplotypeCaller
 
   for c in $(cat C-chromosomes.txt)
   do
-    gatk CombineGVCFs -R genome/bnapus.fasta \
+    gatk CombineGVCFs "-Xmx8G" -R genome/bnapus.fasta \
       -L $c -V vcfs_bnapus.list \
       -O vcf/${c}.g.vcf.gz
 
-    gatk GenotypeGVCFs -R genome/bnapus.fasta \
+    gatk GenotypeGVCFs "-Xmx8G" -R genome/bnapus.fasta \
       -L $c -V vcf/${c}.g.vcf.gz \
-      -O vcf/${c}.vcf.gz
+      -O vcf/final/${c}.vcf.gz
+
+    gatk --java-options "-Xmx8G" VariantFiltration -R genome/bnapus.fasta \
+      -V vcf/final/${c}.vcf.gz -O vcf/final/${c}.w-bp-filters.vcf.gz \
+      -L $c --filter-name "best-practices" \
+      --filter-expression "QD < 2.0 || FS > 60.0 || SOR > 3.0 || MQ < 40.0 || MQRankSum < -12.5 || ReadPosRankSum < -8.0"
+
+    gatk --java-options "-Xmx8G" SelectVariants -R genome/bnapus.fasta \
+      -V vcf/final/${c}.w-bp-filters.vcf.gz -O vcf/final/${c}.filtered.vcf.gz \
+      -L $c -select-type SNP --exclude-filtered
   done
 
   for a in $(cat A-chromosomes.txt)
   do
-    gatk CombineGVCFs -R genome/bnapus.fasta \
+    gatk CombineGVCFs "-Xmx8G" -R genome/bnapus.fasta \
       -L $a -V vcfs_bnapus.list \
       -O vcf/${a}.g.vcf.gz
 
-    gatk GenotypeGVCFs -R genome/bnapus.fasta \
+    gatk GenotypeGVCFs "-Xmx8G" -R genome/bnapus.fasta \
       -L $a -V vcf/${a}.g.vcf.gz \
-      -O vcf/${a}.vcf.gz
+      -O vcf/final/${a}.vcf.gz
+
+    gatk --java-options "-Xmx8G" VariantFiltration -R genome/bnapus.fasta \
+      -V vcf/final/${a}.vcf.gz -O vcf/final/${a}.w-bp-filters.vcf.gz \
+      -L $a --filter-name "best-practices" \
+      --filter-expression "QD < 2.0 || FS > 60.0 || SOR > 3.0 || MQ < 40.0 || MQRankSum < -12.5 || ReadPosRankSum < -8.0"
+
+    gatk --java-options "-Xmx8G" SelectVariants -R genome/bnapus.fasta \
+      -V vcf/final/${a}.w-bp-filters.vcf.gz -O vcf/final/${a}.filtered.vcf.gz \
+      -L $a -select-type SNP --exclude-filtered
   done
 
 ----
