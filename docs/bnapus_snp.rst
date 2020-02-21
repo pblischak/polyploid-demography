@@ -56,9 +56,9 @@ Obtaining the Reference Genome
   samtools faidx bnapus.fasta
 
   # Index everything with BWA
-  bwa faidx A_bnapus.fasta
-  bwa faidx C_bnapus.fasta
-  bwa faidx bnapus.fasta
+  bwa index A_bnapus.fasta
+  bwa index C_bnapus.fasta
+  bwa index bnapus.fasta
 
   # Create a sequence dictionary for everything with Picard.
   # We'll need this for running GATK. Be sure to substitute

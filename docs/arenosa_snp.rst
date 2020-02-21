@@ -24,7 +24,7 @@ We got the reference genome (v1.0) from Phytozome, along with v2.1 of the gene a
   samtools faidx alyrata.fasta
 
   # Index with BWA
-  bwa faidx alyrata.fasta
+  bwa index alyrata.fasta
 
   # Create a sequence dictionary with Picard.
   # We'll need this for running GATK. Be sure to substitute
