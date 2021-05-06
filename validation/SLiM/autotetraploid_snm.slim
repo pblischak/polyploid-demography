@@ -1,0 +1,105 @@
+// Peter Ralph, 10 September 2019: autotetraploidy
+// Modified by Paul Blischak, 29 September 2020
+/*
+	Tetraploidy:
+
+	This is a simple model of an autotetraploid.  To do this, we have to
+	(a) give each individual *four* genomes
+	(b) let crossing-over happen between any of the possible pairings
+	(c) compute fitness with all four genomes
+
+	(a) Four genomes: the "real" individuals are in p1. Each individual has their other two genomes stashed
+	away in an individual in p2; the individuals in p2 don't do anything on their own. To identify them,
+	each individual in p1 has a "tag" that records the index of their pair in p2, so that
+	  p2.individuals[ind.tag].genomes
+	gets you the other two genomes for individual "ind" in p1. (To create these associations, we give each
+	individual a unique label, stored in their tagF property.) After an individual dies, we clean up their
+	paired individual by setting their fitness to 0.0 in the following generation. So, there's always more
+	individuals in p2 than in p1; the difference is individuals in p2 whose pair in p1 has just died.
+
+	(b) For crossing-over, we pick random orderings of each of the mates' four genomes,
+	then do crossing-over between pairs.
+
+	(c) Every new mutation has a property, "h", that is a vector of length 5, always starting with 0 and ending
+	with 1, that has randomly chosen dominance coefficients. Then, the contribution to fitness of having
+	k copies of a mutation is h[k] * s, where recall that: indexing is zero-based; fitness is multiplicative; and
+	since this is a nonWF model, "fitness" means probability of survival until the next generation.
+*/
+
+initialize() {
+	setSeed(rdunif(1, 0, asInteger(2^60) - 1)+asInteger(rep));
+	defineConstant("K", 1000);
+	defineConstant("L", 1e6); // total bp length
+	defineConstant("mu", 6.25e-7);
+
+	initializeMutationType("m1", 0.5, "f", 0.0);
+	m1.convertToSubstitution = T;
+
+	initializeGenomicElementType("g1", m1, 1.0);
+	initializeGenomicElement(g1, 0, L - 1);
+	initializeMutationRate(mu);
+	initializeRecombinationRate(6.25e-7);
+}
+
+1 {
+	sim.addSubpop("p1", K);
+	sim.addSubpop("p2", K);
+	p1.setMigrationRates(p2, 0.5);
+	p2.setMigrationRates(p1, 0.5);
+}
+
+late() {
+	if (sim.generation % 50 == 0){
+		catn(sim.generation);
+	}
+}
+
+40000 late() {
+	//for (ind in p1.individuals) {
+	//	if (ind.tagF != p2.individuals[ind.tag].tagF) {
+	//		catn("oh no! there was an error for individual " + ind.index);
+	//	}
+	//}
+	/*
+	  Here we go through and sample 20 chromosomes from the two populations that make
+	  up the autotetraploid. We then get the SFS using the following steps:
+
+	    1. Find all positions that have mutations across both populations.
+	    2. Tabulate the number of individuals with the mutation across all
+	       possible positions.
+	    3. Use the mutation counts to build the SFS.
+	*/
+	for(i in 1:50){
+		// Sample individuals from pop1
+		pop1_ind = sample(p1.individuals, 10, T);
+		pop2_ind = sample(p2.individuals, 10, T);
+
+		mutSum = rep(0, size(sim.mutations));
+		for (ind in c(pop1_ind,pop2_ind)) {
+			for (g in ind.genomes) {
+				mutSum = mutSum + asInteger(g.containsMutations(sim.mutations));
+			}
+		}
+
+		// Get the SFS by tabulating how often we see mutations with
+		// different frequencies.
+		sfs = rep(0,4 * size(pop1_ind)+1);
+		for(mut in mutSum){
+			sfs[mut] = sfs[mut] + 1;
+		}
+
+		// compute diversity at segregating sites
+		N = 4 * length(pop1_ind);
+		p = mutSum / (4 * length(pop1_ind));
+		p = p[p > 0 & p < 1];
+		pi = mean(2 * p * (1-p));
+		catn("The mean diversity at segregating sites among " + length(pop1_ind) + " individuals is: " + pi);
+		catn("The mean diversity over the whole genome is " + pi * length(p) / L);
+		catn("... and the value expected from theory is " + 8 * p1.individualCount * mu);
+		catn("ratio = " + (pi * length(p) / L) / (8 * p1.individualCount * mu));
+
+		// Write the file in dadi format
+		writeFile("autotetraploid_snm2_"+ rep + "_" +i+".fs", "41 unfolded\n" + paste(sfs, " ") + "\n");
+		//writeFile("autotetraploid_snm2_" + i + ".fs", "41 unfolded\n" + paste(sfs, sep=" ") + "\n");
+	}
+}
