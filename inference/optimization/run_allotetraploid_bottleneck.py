@@ -163,22 +163,6 @@ if __name__ == "__main__":
 
     # True parameter values
     p_true = [1.0,nuBot,T1,T2]
-    H = dadi.Godambe.get_godambe(
-        func_ex, pts_l, [], p_true,
-        func_ex(p_true, ns, pts_l),
-        eps=0.01, log=True, just_hess=True
-    )
-    H_inv = np.linalg.inv(H)
-    #FIM = dadi.Godambe.FIM_uncert(func_ex, pts_l, p_true, data)
-    print("** Hessian: **")
-    print(H)
-    print("\n** Inverse Hessian: **")
-    print(H_inv)
-    print("\n** Eigendecomposition of Hessian: **")
-    print(np.linalg.eig(H))
-    print("\n** Eigendecomposition of Inverse Hessian: **")
-    print(np.linalg.eig(H_inv))
-    exit(0)
 
     # Optimization loop
     opt_successes = 0
