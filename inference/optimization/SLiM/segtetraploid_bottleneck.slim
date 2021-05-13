@@ -1,0 +1,133 @@
+/*
+	Segmental allotetraploid (bottleneck):
+
+	Example usage:
+
+	slim -d "nuBot=0.1" -d "T1=0.5" -d "T2=0.25" -d "dij=0.001" -d "rep=1" segtetraploid_bottleneck.slim
+
+	Parameters:
+
+		nuBot: Proportion of the ancestral population size remaining after bottleneck.
+		T1: The amount of time in dadi units (# of 2N generations) that the parents
+				are isolated before forming the allotetraploid.
+		T2: The amount of time the allotetraploid lineage has existed before we sample
+				it.
+		dij: The probability of subgenomic exchange (homoeologous crossover) each
+				 generation.
+		rep: Simulation replicate number (for running things in a for loop or
+				 an array job on a HPC).
+*/
+
+initialize() {
+	setSeed(rdunif(1, 0, asInteger(2^60) - 1)+asInteger(rep));
+
+	defineConstant("K", 1000);
+	defineConstant("L", 1e6); // total bp length
+
+	initializeMutationType("m1", 0.5, "f", 0.0);
+	m1.convertToSubstitution = T;
+
+	initializeGenomicElementType("g1", m1, 1.0);
+	initializeGenomicElement(g1, 0, L - 1);
+	initializeMutationRate(1.25e-6);
+	initializeRecombinationRate(1.25e-6);
+}
+
+1 {
+	sim.addSubpop("p1", K);
+	sim.rescheduleScriptBlock(
+		s1,
+		asInteger(20000 + 2000 * asFloat(T1)),
+		asInteger(20000 + 2000 * asFloat(T1))
+	);
+	sim.rescheduleScriptBlock(
+		s2,
+		asInteger(20000 + 2000 * (asFloat(T1) + asFloat(T2))),
+		asInteger(20000 + 2000 * (asFloat(T1) + asFloat(T2)))
+	);
+}
+
+20000: late() {
+	catn(sim.generation + "\t" + p1.individualCount + "\t" + p2.individualCount);
+}
+
+20000 {
+	sim.addSubpopSplit("p2", K, p1);
+}
+
+s1 10 late() {
+	// Set population sizes after bottleneck
+	p1.setSubpopulationSize(asInteger(asFloat(nuBot) * 1000));
+	p2.setSubpopulationSize(asInteger(asFloat(nuBot) * 1000));
+
+	// Set subgenome exchange (migration) rates
+	p1.setMigrationRates(p2, asFloat(dij));
+	p2.setMigrationRates(p1, asFloat(dij));
+}
+
+s2 10 late() {
+	/*
+		Here we go through and sample 20 chromosomes each from the two populations that make
+		up the allotetraploid. We then get the SFS using the following steps:
+
+			1. Find all positions that have mutations across both populations.
+			2. Tabulate the number of individuals with the mutation across all
+				possible positions.
+			3. Use the mutation counts to build the SFS.
+	*/
+	// Sample individuals from pop1 with tag 1
+	pop1_ind = sample(p1.individuals, 10, T);
+
+	// Get the genomes of the sampled individuals
+	pop1_g   = sapply(pop1_ind, "applyValue.genomes;");
+
+	// Sample individuals from pop1 with tag 2
+	pop2_ind = sample(p2.individuals, 10, T);
+
+	// Get the genomes of the pop2 individuals
+	pop2_g   = sapply(pop2_ind, "applyValue.genomes;");
+
+	// Find where the mutations are on the sampled chromosomes
+	// and sort by position for convenience
+	pop1_m = sortBy(unique(pop1_g.mutations), "position");
+	pop2_m = sortBy(unique(pop2_g.mutations), "position");
+
+	// Take the union of mutated positions to get all
+	// places where a mutation happened in both populations.
+	m = setUnion(pop1_m,pop2_m);
+	print(size(m));
+
+	// make a vector of 0's to store the number of individuals
+	// with mutations at each position in both populations
+	pop1_mutSum = rep(0,size(m));
+	pop2_mutSum = rep(0,size(m));
+
+	// initialize the SFS
+	sfs = rep(0,41);
+
+	// Loop through each genome/chromosome and see if it has a mutations
+	// at a given position. If it does, add it to the count (this is adding vectors).
+	for(genome in pop1_g){
+		hasMuts = (match(m, genome.mutations) >= 0);
+		pop1_mutSum = pop1_mutSum + asInteger(hasMuts);
+	}
+	for(genome in pop2_g){
+		hasMuts = (match(m, genome.mutations) >= 0);
+		pop2_mutSum = pop2_mutSum + asInteger(hasMuts);
+	}
+
+	// Add the mutation count vectors for pop1 and pop2 together
+	mutSum = pop1_mutSum + pop2_mutSum;
+
+	// Get the SFS by tabulating how often we see mutations with
+	// different frequencies.
+	for(mut in mutSum){
+		sfs[mut] = sfs[mut] + 1;
+	}
+
+	// Write the file in dadi format
+	writeFile(
+		"./segtetraploid_bottleneck/segtetraploid_bottleneck_"+nuBot+"_"+T1+"_"+T2+"_"+dij+"_"+rep+".fs",
+		"41 unfolded\n"+paste(sfs, " ")+"\n"
+	);
+}
