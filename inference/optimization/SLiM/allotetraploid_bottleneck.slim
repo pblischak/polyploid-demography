@@ -3,17 +3,19 @@
 
 	Example usage:
 
-	slim -d "nuBot=0.1" -d "T1=0.5" -d "T2=0.25" -d "rep=1" allotetraploid_bottleneck.slim
+	slim -d "nuBot=0.1" -d "T1=0.5" -d "T2=0.25" -d "rep=1" \
+		allotetraploid_bottleneck.slim
 
 	Parameters:
 
-		nuBot: Proportion of the ancestral population size remaining after bottleneck.
-		T1: The amount of time in dadi units (# of 2N generations) that the parents
-				are isolated before forming the allotetraploid.
-		T2: The amount of time the allotetraploid lineage has existed before we sample
-				it.
+		nuBot: Proportion of the ancestral population size remaining after
+			   bottleneck.
+		T1: The amount of time in dadi units (# of 2N generations) that the
+			parents are isolated before forming the allotetraploid.
+		T2: The amount of time the allotetraploid lineage has existed before we
+			sample it.
 		rep: Simulation replicate number (for running things in a for loop or
-				 an array job on a HPC).
+			 an array job on a HPC).
 */
 
 initialize() {
@@ -84,7 +86,7 @@ s2 10 late() {
 	// Take the union of mutated positions to get all
 	// places where a mutation happened in both populations.
 	m = setUnion(pop1_m,pop2_m);
-	print(size(m));
+	//print(size(m));
 
 	// make a vector of 0's to store the number of individuals
 	// with mutations at each position in both populations
@@ -115,8 +117,5 @@ s2 10 late() {
 	}
 
 	// Write the file in dadi format
-	writeFile(
-		"./allotetraploid_bottleneck/allotetraploid_bottleneck_"+nuBot+"_"+T1+"_"+T2+"_"+rep+".fs",
-		"41 unfolded\n"+paste(sfs, " ")+"\n"
-	);
+	catn(paste(sfs, " "));
 }

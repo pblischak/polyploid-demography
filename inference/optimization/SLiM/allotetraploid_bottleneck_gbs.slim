@@ -1,18 +1,19 @@
 /*
-	Segmental allotetraploid (isolation only):
+	Allotetraploid (bottleneck):
 
 	Example usage:
 
-	slim -d "T1=0.5" -d "T2=0.25" -d "dij=0.001" -d "rep=1" segtetraploid_iso.slim
+	slim -d "nuBot=0.1" -d "T1=0.5" -d "T2=0.25" -d "rep=1" \
+		allotetraploid_bottleneck.slim
 
 	Parameters:
 
+		nuBot: Proportion of the ancestral population size remaining after
+			   bottleneck.
 		T1: The amount of time in dadi units (# of 2N generations) that the
 			parents are isolated before forming the allotetraploid.
 		T2: The amount of time the allotetraploid lineage has existed before we
 			sample it.
-		dij: The effective number of migrants (2Nm) where m is the probability
-			 of subgenomic exchange (homoeologous crossover) each generation.
 		rep: Simulation replicate number (for running things in a for loop or
 			 an array job on a HPC).
 */
@@ -21,7 +22,7 @@ initialize() {
 	setSeed(rdunif(1, 0, asInteger(2^60) - 1)+asInteger(rep));
 
 	defineConstant("K", 1000);
-	defineConstant("L", 1e6); // total bp length
+	defineConstant("L", 100); // total bp length
 
 	initializeMutationType("m1", 0.5, "f", 0.0);
 	m1.convertToSubstitution = T;
@@ -29,7 +30,7 @@ initialize() {
 	initializeGenomicElementType("g1", m1, 1.0);
 	initializeGenomicElement(g1, 0, L - 1);
 	initializeMutationRate(1.25e-6);
-	initializeRecombinationRate(1.25e-6);
+	initializeRecombinationRate(0.0);
 }
 
 1 {
@@ -46,18 +47,13 @@ initialize() {
 	);
 }
 
-20000: late() {
-	catn(sim.generation + "\t" + p1.individualCount + "\t" + p2.individualCount);
-}
-
 20000 {
 	sim.addSubpopSplit("p2", K, p1);
 }
 
 s1 10 late() {
-	// Set subgenome exchange (migration) rates
-	p1.setMigrationRates(p2, asFloat(dij) / 2000.0);
-	p2.setMigrationRates(p1, asFloat(dij) / 2000.0);
+	p1.setSubpopulationSize(asInteger(asFloat(nuBot) * 1000));
+	p2.setSubpopulationSize(asInteger(asFloat(nuBot) * 1000));
 }
 
 s2 10 late() {
@@ -90,7 +86,7 @@ s2 10 late() {
 	// Take the union of mutated positions to get all
 	// places where a mutation happened in both populations.
 	m = setUnion(pop1_m,pop2_m);
-	//print(size(m));
+	print(size(m));
 
 	// make a vector of 0's to store the number of individuals
 	// with mutations at each position in both populations

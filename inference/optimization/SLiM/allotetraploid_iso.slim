@@ -7,10 +7,10 @@
 
 	Parameters:
 
-		T1: The amount of time in dadi units (# of 2N generations) that the parents
-				are isolated before forming the allotetraploid.
+		T1: The amount of time in dadi units (# of 2N generations) that the
+			parents are isolated before forming the allotetraploid.
 		rep: Simulation replicate number (for running things in a for loop or
-				 an array job on a HPC).
+			 an array job on a HPC).
 */
 initialize() {
 	setSeed(rdunif(1, 0, asInteger(2^60) - 1)+asInteger(rep));
@@ -69,7 +69,7 @@ s1 10 late() {
 	// Take the union of mutated positions to get all
 	// places where a mutation happened in both populations.
 	m = setUnion(pop1_m,pop2_m);
-	print(size(m));
+	//print(size(m));
 
 	// make a vector of 0's to store the number of individuals
 	// with mutations at each position in both populations
@@ -101,8 +101,5 @@ s1 10 late() {
 	}
 
 	// Write the file in dadi format
-	writeFile(
-		"./allotetraploid_iso/allotetraploid_iso_"+T1+"_"+rep+".fs",
-		"41 unfolded\n"+paste(sfs, " ") + "\n"
-	);
+	catn(paste(sfs, " "));
 }
