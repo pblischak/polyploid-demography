@@ -8,7 +8,6 @@
 
 # Import system-level libraries
 from sys import argv,exit
-from os import system
 import argparse as ap
 
 # Import installed libraries
@@ -16,36 +15,6 @@ import dadi
 import dadi.NLopt_mod
 import nlopt
 import numpy as np
-
-# Function to match floats in SLiM output files
-def match_slim_outfloat(flt):
-    """
-    SLiM likes to drop the decimal places from floats that could be integers
-    (e.g., 1.0 becomes just 1). This causes issues which matching up file names
-    so here we convert the floats appropriately here.
-    """
-    str_flt = str(round(flt,1))
-    if str_flt[-1] == '0':
-        return str_flt[0]
-    else:
-        return(str(flt))
-
-# Setting up SLiM run
-def run_slim(nuBot,T1,T2,rep):
-    """
-    Takes arguments needed to run SLiM and makes a system call to generate
-    a simulated SFS.
-    """
-    cmd = [
-        "slim",
-        f'-d "nuBot={nuBot}"',
-        f'-d "T1={T1}"',
-        f'-d "T2={T2}"',
-        f'-d "rep={rep}"',
-        "./SLiM/allotetraploid_bottleneck.slim"
-    ]
-    print(" ".join(cmd))
-    system(" ".join(cmd))
 
 # Defining demographic model
 def allotetraploid_bottleneck(params, ns, pts):
@@ -107,16 +76,16 @@ if __name__ == "__main__":
     )
     additional = parser.add_argument_group("additional arguments")
     additional.add_argument(
+        '--gbs', action="store_true",
+        help="Run GBS-like simulation"
+    )
+    additional.add_argument(
         '--optimization_runs', action="store", type=int, default=50,
         metavar='\b', help="Desired number of independent optimizations"
     )
     additional.add_argument(
         '--max_failures', action="store", type=int, default=50,
         metavar='\b', help="Maximum number of failed optimization attempts"
-    )
-    additional.add_argument(
-        '--skip_slim', action="store_true",
-        help="Skip SLiM simulation (use if already complete)"
     )
 
     # Get arguments and store
@@ -125,21 +94,18 @@ if __name__ == "__main__":
     T1                = args.div_time1
     T2                = args.div_time2
     rep               = args.rep
+    gbs               = args.gbs
     optimization_runs = args.optimization_runs
     max_failures      = args.max_failures
-    skip_slim         = args.skip_slim
 
-    # Run SLiM simulation to generate SFS
-    if not skip_slim:
-        run_slim(nuBot,T1,T2,rep)
-
-    # Deal with SLiM converting floats to integers
-    T1_str = match_slim_outfloat(T1)
-    T2_str = match_slim_outfloat(T2)
+    if gbs:
+        mode = "_gbs"
+    else:
+        mode = ""
 
     # Open output file to record optimization results
     f_out = open(
-        f'allotetraploid_bottleneck/allotetraploid_bottleneck_{nuBot}_'+T1_str+"_"+T2_str+f'_{rep}.csv', 'w'
+        f'allotetraploid_bottleneck/allotetraploid_bottleneck_{nuBot}_{T1}_{T2}_{rep}{mode}.csv', 'w'
     )
     print(
         "rep","loglik","nu0_true","nu0_est","nuBot_true","nuBot_est",
@@ -148,7 +114,7 @@ if __name__ == "__main__":
 
     # Get data, sample sizes, and extract T
     data = dadi.Spectrum.from_file(
-        f'allotetraploid_bottleneck/allotetraploid_bottleneck_{nuBot}_'+T1_str+"_"+T2_str+f'_{rep}.fs'
+        f'allotetraploid_bottleneck/allotetraploid_bottleneck_{nuBot}_{T1}_{T2}_{rep}{mode}.fs'
     )
     ns = data.sample_sizes
 

@@ -8,7 +8,6 @@
 
 # Import system-level libraries
 from sys import argv,exit
-from os import system
 import argparse as ap
 
 # Import installed libraries
@@ -16,34 +15,6 @@ import dadi
 import dadi.NLopt_mod
 import nlopt
 import numpy as np
-
-# Function to match floats in SLiM output files
-def match_slim_outfloat(flt):
-    """
-    SLiM likes to drop the decimal places from floats that could be integers
-    (e.g., 1.0 becomes just 1). This causes issues which matching up file names
-    so here we convert the floats appropriately here.
-    """
-    str_flt = str(round(flt,1))
-    if str_flt[-1] == '0':
-        return str_flt[0]
-    else:
-        return(str(flt))
-
-# Setting up SLiM run
-def run_slim(T,rep):
-    """
-    Takes arguments needed to run SLiM and makes a system call to generate
-    a simulated SFS.
-    """
-    cmd = [
-        "slim",
-        f'-d "T1={T}"',
-        f'-d "rep={rep}"',
-        "./SLiM/allotetraploid_iso.slim"
-    ]
-    print(" ".join(cmd))
-    system(" ".join(cmd))
 
 # Defining demographic model
 def allotetraploid_iso(params, ns, pts):
@@ -94,6 +65,10 @@ if __name__ == "__main__":
     )
     additional = parser.add_argument_group("additional arguments")
     additional.add_argument(
+        '--gbs', action="store_true",
+        help="Run GBS-like simulation"
+    )
+    additional.add_argument(
         '--optimization_runs', action="store", type=int, default=50,
         metavar='\b', help="Desired number of independent optimizations"
     )
@@ -112,18 +87,16 @@ if __name__ == "__main__":
     rep               = args.rep
     optimization_runs = args.optimization_runs
     max_failures      = args.max_failures
-    skip_slim         = args.skip_slim
+    gbs               = args.gbs
 
-    # Run SLiM simulation to generate SFS
-    if not skip_slim:
-        run_slim(T,rep)
-
-    # Deal with SLiM converting floats to integers
-    T_str = match_slim_outfloat(T)
+    if gbs:
+        mode = "_gbs"
+    else:
+        mode = ""
 
     # Open output file to record optimization results
     f_out = open(
-        f'allotetraploid_iso/allotetraploid_iso_'+T_str+f'_{rep}.csv', 'w'
+        f'allotetraploid_iso/allotetraploid_iso_{T}_{rep}{mode}.csv', 'w'
     )
     print(
         "rep","loglik","nu_true","nu_est","T_true","T_est","theta",
@@ -132,7 +105,7 @@ if __name__ == "__main__":
 
     # Get data, sample sizes, and extract T
     data = dadi.Spectrum.from_file(
-        f'allotetraploid_iso/allotetraploid_iso_'+T_str+f'_{rep}.fs'
+        f'allotetraploid_iso/allotetraploid_iso_{T}_{rep}{mode}.fs'
     )
     ns = data.sample_sizes
 
