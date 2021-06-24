@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-<< sim_allotetraploid_bottleneck.py >>
+<< sim_segtetraploid_iso.py >>
 
 
 """
@@ -13,21 +13,23 @@ import argparse as ap
 
 # Import installed libraries
 import dadi
+import dadi.NLopt_mod
+import nlopt
 import numpy as np
 
 # Setting up SLiM run
-def run_slim(nuBot,T1,T2,rep,mode=""):
+def run_slim(T1, T2, dij, rep, mode=""):
     """
     Takes arguments needed to run SLiM and makes a system call to generate
     a simulated SFS.
     """
     cmd = [
         "slim",
-        f'-d "nuBot={nuBot}"',
         f'-d "T1={T1}"',
         f'-d "T2={T2}"',
+        f'-d "dij={dij}"',
         f'-d "rep={rep}"',
-        "./SLiM/allotetraploid_bottleneck"+mode+".slim"
+        "./SLiM/segtetraploid_iso"+mode+".slim"
     ]
     print(" ".join(cmd))
     output = subprocess.Popen(" ".join(cmd), shell=True, stdout=subprocess.PIPE)
@@ -44,21 +46,21 @@ if __name__ == "__main__":
 
     # Set up argument parsing
     parser = ap.ArgumentParser(
-        description = "Options for run_allotetraploid_iso.py",
+        description = "Options for run_segtetraploid_iso.py",
         add_help = True
     )
     required = parser.add_argument_group("required arguments")
     required.add_argument(
-        '-nu', '--nuBot', action="store", type=float, required=True,
-        metavar='\b', help="Size of population after bottleneck"
-    )
-    required.add_argument(
         '-T1', '--div_time1', action="store", type=float, required=True,
-        metavar='\b', help="Length of time between split and bottleneck"
+        metavar='\b', help="Length of time after split but before polyploid formation"
     )
     required.add_argument(
         '-T2', '--div_time2', action="store", type=float, required=True,
-        metavar='\b', help="Length of after bottleneck"
+        metavar='\b', help="Time since polyploid formation"
+    )
+    required.add_argument(
+        '-dij', '--ex_rate', action="store", type=float, required=True,
+        metavar='\b', help="homoeologous exchange rate (M=2Nm)"
     )
     required.add_argument(
         '-r', '--rep', action="store", type=int, required=True,
@@ -76,9 +78,9 @@ if __name__ == "__main__":
 
     # Get arguments and store
     args              = parser.parse_args()
-    nuBot             = args.nuBot
     T1                = args.div_time1
     T2                = args.div_time2
+    dij               = args.ex_rate
     rep               = args.rep
     nloci             = args.nloci
     gbs               = args.gbs
@@ -91,9 +93,10 @@ if __name__ == "__main__":
         mode = ""
         nloci = 10
 
+    # Run SLiM simulation to generate SFS
     for i in range(nloci):
-        fs += run_slim(nuBot,T1,T2,rep,mode=mode)
+        fs += run_slim(T1,T2,dij,rep,mode=mode)
     
     fs.to_file(
-        f'allotetraploid_bottleneck/allotetraploid_bottleneck_{nuBot}_{T1}_{T2}_{rep}{mode}.fs'
+        f'segtetraploid_iso/segtetraploid_iso_{T1}_{T2}_{dij}_{rep}{mode}.fs'
     )

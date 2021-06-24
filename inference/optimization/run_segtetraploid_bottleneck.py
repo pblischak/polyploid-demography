@@ -8,7 +8,6 @@
 
 # Import system-level libraries
 from sys import argv,exit
-from os import system
 import argparse as ap
 
 # Import installed libraries
@@ -17,41 +16,10 @@ import dadi.NLopt_mod
 import nlopt
 import numpy as np
 
-# Function to match floats in SLiM output files
-def match_slim_outfloat(flt):
-    """
-    SLiM likes to drop the decimal places from floats that could be integers
-    (e.g., 1.0 becomes just 1). This causes issues which matching up file names
-    so here we convert the floats appropriately here.
-    """
-    str_flt = str(round(flt,1))
-    if str_flt[-1] == '0':
-        return str_flt[0]
-    else:
-        return(str(flt))
-
-# Setting up SLiM run
-def run_slim(nuBot, T1, T2, eij, rep):
-    """
-    Takes arguments needed to run SLiM and makes a system call to generate
-    a simulated SFS.
-    """
-    cmd = [
-        "slim",
-        f"-d nuBot={nuBot}",
-        f'-d "T1={T1}"',
-        f'-d "T2={T2}"',
-        f'-d "eij={eij}"',
-        f'-d "rep={rep}"',
-        "./SLiM/segtetraploid_bottleneck.slim"
-    ]
-    print(" ".join(cmd))
-    system(" ".join(cmd))
-
 # Defining demographic model
 def segtetraploid_bottleneck(params, ns, pts):
     """
-    params = (nu,nuBot,T1,T2,Eij)
+    params = (nu,nuBot,T1,T2,dij)
     ns = (n1,n2)
 
     Split into two populations of specifed size.
@@ -63,7 +31,7 @@ def segtetraploid_bottleneck(params, ns, pts):
     n1,n2: Sample sizes of resulting Spectrum
     pts: Number of grid points to use in integration.
     """
-    nu,nuBot,T1,T2,eij = params
+    nu,nuBot,T1,T2,dij = params
     new_ns = [int(ns[0]/2),int(ns[0]/2)]
 
     xx = dadi.Numerics.default_grid(pts)
@@ -72,7 +40,7 @@ def segtetraploid_bottleneck(params, ns, pts):
     phi = dadi.PhiManip.phi_1D_to_2D(xx, phi)
 
     phi = dadi.Integration.two_pops(phi, xx, T1, nu, nu)
-    phi = dadi.Integration.two_pops(phi, xx, T2, nuBot, nuBot, m12=eij, m21=eij)
+    phi = dadi.Integration.two_pops(phi, xx, T2, nuBot, nuBot, m12=dij, m21=dij)
 
     fs_2D = dadi.Spectrum.from_phi(phi, new_ns, (xx,xx), pop_ids=['sub1','sub2'])
     fs_1D = fs_2D.combine_pops([1,2])
@@ -103,7 +71,7 @@ if __name__ == "__main__":
         metavar='\b', help="Time since polyploid formation"
     )
     required.add_argument(
-        '-eij', '--ex_rate', action="store", type=float, required=True,
+        '-dij', '--ex_rate', action="store", type=float, required=True,
         metavar='\b', help="homoeologous exchange rate (M=2Nm)"
     )
     required.add_argument(
@@ -112,6 +80,10 @@ if __name__ == "__main__":
     )
     additional = parser.add_argument_group("additional arguments")
     additional.add_argument(
+        '--gbs', action="store_true",
+        help="Run GBS-like simulation"
+    )
+    additional.add_argument(
         '--optimization_runs', action="store", type=int, default=50,
         metavar='\b', help="Desired number of independent optimizations"
     )
@@ -119,49 +91,42 @@ if __name__ == "__main__":
         '--max_failures', action="store", type=int, default=50,
         metavar='\b', help="Maximum number of failed optimization attempts"
     )
-    additional.add_argument(
-        '--skip_slim', action="store_true",
-        help="Skip SLiM simulation (use if already complete)"
-    )
 
     # Get arguments and store
     args              = parser.parse_args()
     nuBot             = args.nuBot
     T1                = args.div_time1
     T2                = args.div_time2
-    eij               = args.ex_rate
+    dij               = args.ex_rate
     rep               = args.rep
     optimization_runs = args.optimization_runs
     max_failures      = args.max_failures
-    skip_slim         = args.skip_slim
+    gbs               = args.gbs
 
-    # Run SLiM simulation to generate SFS
-    if not skip_slim:
-        run_slim(nuBot,T1,T2,eij,rep)
-
-    # Deal with SLiM converting floats to integers
-    T1_str = match_slim_outfloat(T1)
-    T2_str = match_slim_outfloat(T2)
+    if gbs:
+        mode = "_gbs"
+    else:
+        mode = ""
 
     # Open output file to record optimization results
     f_out = open(
-        f'segtetraploid_bottleneck/segtetraploid_bottleneck_{nuBot}_'+T1_str+"_"+T2_str+f'_{eij}_{rep}.csv', 'w'
+        f'segtetraploid_bottleneck/segtetraploid_bottleneck_{nuBot}_{T1}_{T2}_{dij}_{rep}{mode}.csv', 'w'
     )
     print(
         "rep","loglik","nu_true","nu_est","nuBot_true","nuBot_est","T1_true",
-        "T1_est","T2_true","T2_est","eij_true","eij_est","theta",
+        "T1_est","T2_true","T2_est","dij_true","dij_est","theta",
         sep=",", file=f_out
     )
 
     # Get data, sample sizes, and extract T
     data = dadi.Spectrum.from_file(
-        f'segtetraploid_iso/segtetraploid_nottlenecl_{nuBot}_'+T1_str+"_"+T2_str+f'_{eij}_{rep}.fs'
+        f'segtetraploid_bottleneck/segtetraploid_bottleneck_{nuBot}_{T1}_{T2}_{dij}_{rep}{mode}.fs'
     )
     ns = data.sample_sizes
 
     # Setting up grid points for extrapolation
     pts_l = [60,70,80]
-    func = segtetraploid_iso
+    func = segtetraploid_bottleneck
     func_ex = dadi.Numerics.make_extrap_log_func(func)
 
     # Set bounds
@@ -169,7 +134,7 @@ if __name__ == "__main__":
     lower_bound = [1e-4, 1e-4, 1e-4, 1e-4, 1e-4]
 
     # True parameter values
-    p_true = [1.0,nuBot,T1,T2,eij]
+    p_true = [1.0,nuBot,T1,T2,dij]
 
     # Optimization loop
     opt_successes = 0
@@ -201,7 +166,7 @@ if __name__ == "__main__":
         # Compare data and model, record results
         model = func_ex(popt, ns, pts_l)
         theta = dadi.Inference.optimal_sfs_scaling(model, data)
-        print(opt_rep,LLopt,"1.0",popt[0],nuBot,popt[1],T1,popt[2],T2,popt[3],eij,popt[4],theta,sep=",",file=f_out)
+        print(opt_rep,LLopt,"1.0",popt[0],nuBot,popt[1],T1,popt[2],T2,popt[3],dij,popt[4],theta,sep=",",file=f_out)
         if opt_rep % 10 == 0:
             f_out.flush()
 

@@ -76,10 +76,6 @@ if __name__ == "__main__":
         '--max_failures', action="store", type=int, default=50,
         metavar='\b', help="Maximum number of failed optimization attempts"
     )
-    additional.add_argument(
-        '--skip_slim', action="store_true",
-        help="Skip SLiM simulation (use if already complete)"
-    )
 
     # Get arguments and store
     args              = parser.parse_args()

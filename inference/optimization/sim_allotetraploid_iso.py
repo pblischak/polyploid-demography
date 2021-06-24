@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-<< run_allotetraploid_iso.py >>
+<< sim_allotetraploid_iso.py >>
 
 
 """
@@ -28,7 +28,6 @@ def run_slim(T,rep,mode=""):
         "./SLiM/allotetraploid_iso"+mode+".slim"
     ]
     print(" ".join(cmd))
-    #system(" ".join(cmd))
     output = subprocess.Popen(" ".join(cmd), shell=True, stdout=subprocess.PIPE)
     fs = dadi.Spectrum([
         float(i) for i in output.stdout.read().decode().split("\n")[-2].split()
