@@ -66,7 +66,7 @@ if __name__ == "__main__":
     )
     additional = parser.add_argument_group("additional arguments")
     additional.add_argument(
-        '-l', '--nloci', type=int, default=10000,
+        '-l', '--nloci', type=int, default=5000,
         metavar='\b', help="Number of GBS loci. Not used for WGS simulation"
     )
     additional.add_argument(

@@ -23,7 +23,7 @@ initialize() {
 	setSeed(rdunif(1, 0, asInteger(2^60) - 1)+asInteger(rep));
 
 	defineConstant("K", 1000);
-	defineConstant("L", 1e6); // total bp length
+	defineConstant("L", 5e6); // total bp length
 
 	initializeMutationType("m1", 0.5, "f", 0.0);
 	m1.convertToSubstitution = T;
