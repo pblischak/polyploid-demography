@@ -120,7 +120,7 @@ if __name__ == "__main__":
             popt,LLopt = dadi.Inference.opt(
                 p0, data, func_ex, pts_l,
                 lower_bound=lower_bound, upper_bound=upper_bound,
-                verbose=10
+                maxeval=int(1e3), maxtime=int(3600), verbose=10
             )
             opt_successes +=1
         except:
@@ -132,7 +132,7 @@ if __name__ == "__main__":
         model = func_ex(popt, ns, pts_l)
         theta = dadi.Inference.optimal_sfs_scaling(model, data)
         print(
-            LLopt, popt[0], popt[1], popt[2], popt[3], pop[4],
+            LLopt, popt[0], popt[1], popt[2], popt[3], popt[4],
             theta, sep=",", file=f_out
         )
         if opt_rep % 10 == 0:
