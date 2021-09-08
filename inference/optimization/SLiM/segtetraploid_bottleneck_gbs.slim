@@ -62,8 +62,8 @@ s1 10 late() {
 	p2.setSubpopulationSize(asInteger(asFloat(nuBot) * 1000));
 
 	// Set subgenome exchange (migration) rates
-	p1.setMigrationRates(p2, asFloat(dij));
-	p2.setMigrationRates(p1, asFloat(dij));
+	p1.setMigrationRates(p2, asFloat(dij) / 2000.0);
+	p2.setMigrationRates(p1, asFloat(dij) / 2000.0);
 }
 
 s2 10 late() {

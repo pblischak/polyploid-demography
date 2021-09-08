@@ -15,20 +15,26 @@ get_best_loglik <- function(input_file){
 
 res <- plyr::ldply(results_files, get_best_loglik)
 
+nu_df <- T_df <- data.frame(
+	Type = c("GBS","GBS","WGS","WGS"),
+	nu_true = c(1.0,1.0,1.0,1.0),
+	value = c(1.0,1.0,1.0,1.0)
+)
+
 A <- res %>% ggplot(aes(x=Type, y=nu_est)) +
 	geom_boxplot(alpha = 0.5) +
 	geom_jitter(alpha = 0.8, width = 0.1) + 
 	facet_wrap(.~T_true) +
-	geom_hline(aes(yintercept = 1),
-						 color="blue",
-						 alpha=0.5,
-						 size=1.25) + 
-	theme_classic() +
+	geom_errorbar(
+		data=nu_df, aes(y=NULL, ymin=value, ymax=value), size = 1.25,
+		position=position_dodge(), color="blue", alpha = 0.4
+	) +
+	theme_bw() +
 	ggtitle(
 		"Effective Population Size"
 	)
 
-lines_df <- data.frame(
+T_df <- data.frame(
 	Type = c("GBS","GBS","WGS","WGS"),
 	T_true = c(0.5,1.5,0.5,1.5),
 	value = c(0.5,1.5,0.5,1.5)
@@ -39,12 +45,12 @@ B <- res %>% ggplot(aes(x=Type, y=T_est)) +
 	geom_jitter(alpha = 0.8, width = 0.1) + 
 	facet_wrap(.~T_true) +
 	geom_errorbar(
-		data=lines_df, aes(y=NULL, ymin=value, ymax=value), size = 1.25,
+		data=T_df, aes(y=NULL, ymin=value, ymax=value), size = 1.25,
 		position=position_dodge(), color="blue", alpha = 0.4
 	) +
-	theme_classic() +
+	theme_bw() +
 	ggtitle(
-		"Divergence Time"
+		"Parental Divergence Time"
 	)
 
 A + B
