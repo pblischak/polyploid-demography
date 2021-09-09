@@ -9,3 +9,4 @@ docs/_template
 *.out
 .Rhistory
 *.pdf
+batch_*

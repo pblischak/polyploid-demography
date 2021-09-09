@@ -29,8 +29,8 @@ def allotetraploid_bottleneck(params, ns, pts):
     T1: Length of time between split and bottleneck.
     T2: Length of bottleneck.
     n1,n2: Sample sizes of resulting Spectrum
-    misid: probability of ancestral allele misidentification.
-    pts: Number of grid points to use in integration.
+    misid: probability of ancestral allele misidentification
+    pts: Number of grid points to use in integration
     """
     nu0,nuBot,T1,T2,misid = params
     new_ns = [int(ns[0]/2),int(ns[0]/2)]
@@ -98,8 +98,8 @@ if __name__ == "__main__":
     upper_bound = [100,100,100,100,1.0]
     lower_bound = [1e-4,1e-4,1e-4,1e-4,0.0]
 
-    # True parameter values
-    p_true = [1.0,1.0,1.0,1.0,0.05]
+    # Guess at initial parameter values
+    p_init = [1.0,1.0,1.0,1.0,0.05]
 
     # Optimization loop
     opt_successes = 0
@@ -111,7 +111,7 @@ if __name__ == "__main__":
 
         # Perturb parameters to random starting point
         p0 = dadi.Misc.perturb_params(
-            p_true, fold=2, upper_bound=upper_bound,
+            p_init, fold=2, upper_bound=upper_bound,
             lower_bound=lower_bound
         )
 
