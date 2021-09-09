@@ -57,7 +57,7 @@ def segtetraploid_bottleneck(params, ns, pts):
 
 if __name__ == "__main__":
     parser = ap.ArgumentParser(
-        description = "Options for run_allotetraploid_iso.py",
+        description = "Options for run_segtetraploid_iso.py",
         add_help = True
     )
     optional = parser.add_argument_group("optional arguments")
