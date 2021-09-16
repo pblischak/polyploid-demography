@@ -14,7 +14,6 @@ get_best_loglik <- function(input_file){
 }
 
 res <- plyr::ldply(results_files, get_best_loglik)
-res <- res %>% mutate(M_true = dij_true*2000)
 
 T2_df <- data.frame(
 	Type = c("GBS","GBS","WGS","WGS"),
@@ -35,18 +34,18 @@ A <- res %>% ggplot(aes(x=Type, y=T2_est)) +
 		"Segmental Allotetraploid Formation Time"
 	)
 
-M_df <- data.frame(
+dij_df <- data.frame(
 	Type = c("GBS","GBS","WGS","WGS"),
-	M_true = c(5e-5,5e-7,5e-5,5e-7)*2000,
-	value = c(5e-5,5e-7,5e-5,5e-7)*2000
+	dij_true = c(0.1,0.001,0.1,0.001),
+	value = c(0.1,0.001,0.1,0.001)
 )
 
 B <- res %>% ggplot(aes(x=Type, y=dij_est)) +
 	geom_boxplot(alpha = 0.5) +
 	geom_jitter(alpha = 0.8, width = 0.1) + 
-	facet_wrap(.~M_true) +
+	facet_wrap(.~dij_true) +
 	geom_errorbar(
-		data=M_df, aes(y=NULL, ymin=value, ymax=value), size = 1.25,
+		data=dij_df, aes(y=NULL, ymin=value, ymax=value), size = 1.25,
 		position=position_dodge(), color="blue", alpha = 0.4
 	) +
 	theme_bw() +
