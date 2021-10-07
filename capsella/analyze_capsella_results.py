@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 
 import dadi
+import dadi.Godambe
 import matplotlib
 import matplotlib.pyplot as plt
 import pylab
-import numpy
+import numpy as np
 from dadi import Numerics, Inference
 
-def plot_1d_comp_multinom(model1, model2, data, fig_num=None, residual='Anscombe',
-                          plot_masked=False):
+
+def plot_1d_comp_multinom(
+    model1, model2, data, fig_num=None,
+    residual='Anscombe', plot_masked=False
+):
     """
     Mulitnomial comparison between 1d model and data.
 
@@ -32,8 +36,10 @@ def plot_1d_comp_multinom(model1, model2, data, fig_num=None, residual='Anscombe
     plot_1d_comp_Poisson(model1, model2, data, fig_num, residual,
                          plot_masked)
 
-def plot_1d_comp_Poisson(model1, model2, data, fig_num=None, residual='Anscombe',
-                         plot_masked=False, show=True):
+def plot_1d_comp_Poisson(
+    model1, model2, data, fig_num=None,
+    residual='Anscombe', plot_masked=False, show=True
+):
     """
     Poisson comparison between 1d model and data.
 
@@ -173,16 +179,222 @@ if __name__ == "__main__":
     )
     data.pop_ids = ["CbpA","CbpB","grand","ori"]
     data = data.marginalize([2,3]).combine_pops([1,2])
+    all_boot = [data.sample() for i in range(100)]
     pts_l = [50,60,70]
     func1 = allotetraploid_bottleneck
     func1_ex = dadi.Numerics.make_extrap_log_func(func1)
     func2 = segtetraploid_bottleneck
     func2_ex = dadi.Numerics.make_extrap_log_func(func2)
 
-    popt1 = [16.13550897, 0.1953863, 1.9726986, 0.507677479, 0.016506372]
-    popt2 = [8.0429719, 1.22627327, 16.8074473, 2.5559702, 5.576213e-03, 0.030813141]
+    popt1 = [
+        16.13550897,   0.1953863,  1.9726986,
+        0.507677479, 0.016506372
+    ]
+    popt2 = [
+        8.0429719, 1.22627327, 16.8074473,
+        2.5559702, 5.576213e-03, 0.030813141
+    ]
 
     model1 = func1_ex(popt1, data.sample_sizes, pts_l)
     model2 = func2_ex(popt2, data.sample_sizes, pts_l)
 
-    plot_1d_comp_multinom(model1, model2, data, fig_num=1)
+    #plot_1d_comp_multinom(model1, model2, data, fig_num=1)
+
+    llik1  = -651.3589
+    theta1 = 5584.862
+    llik2  = -515.0822
+    theta2 = 978.8552
+
+    mu = 7.0e-9 # mutation rate
+    L  = 773748 # sequence length
+    g = 1       # generation time
+    scalar = 4.0 * L * mu
+    Nref1 = theta1 / scalar
+    Nref2 = theta2 / scalar
+    X_sq = 2*(llik2 - llik1)
+    print(f"Likelihood ratio statistic = {X_sq}")
+    p_val = dadi.Godambe.sum_chi2_ppf(X_sq, weights=(0.5,0.5))
+    print(f"p_val = {p_val}")
+
+    """
+    Uncertainties for allotetraploid bottleneck (model 1)
+    """
+    check_grid_sizes1 = True
+    if check_grid_sizes1:
+        print("\nChecking uncertainties with different grid sizes:")
+        for e in [1e-2, 1e-3, 1e-4, 1e-5, 1e-6, 1e-7]:
+    	    u = dadi.Godambe.GIM_uncert(
+                func1_ex, pts_l, all_boot, popt1,
+                data, log=True, multinom=True, eps=e
+            )
+    	    print(f"{e} = {u}")
+    
+    eps=1e-3 # the default is 1e-2
+    uncerts1, GIM1 = dadi.Godambe.GIM_uncert(
+        func1_ex, pts_l, all_boot, popt1, data, log=True,
+        multinom=True, return_GIM=True, eps=eps
+    )
+    vcov1 = np.linalg.inv(GIM1)
+
+    # Do conversions here for propogation of uncertainty
+    # (ie, we're multiplying everything by theta, which is also estimated).
+    uncerts1_2 = [
+        np.sqrt(vcov1[-1,-1] + vcov1[0,0] + 2*vcov1[0,-1]),
+        np.sqrt(vcov1[-1,-1] + vcov1[1,1] + 2*vcov1[1,-1]),
+        np.sqrt(vcov1[-1,-1] + vcov1[2,2] + 2*vcov1[2,-1]),
+        np.sqrt(vcov1[-1,-1] + vcov1[3,3] + 2*vcov1[3,-1]),
+        uncerts1[4],
+        uncerts1[-1]
+    ]
+    
+    log_params1 = [
+        np.log(theta1) + np.log(popt1[0]) + np.log(1/scalar),   # N0
+        np.log(theta1) + np.log(popt1[1]) + np.log(1/scalar),   # Nbot
+        np.log(theta1) + np.log(popt1[2]) + np.log(2*g/scalar), # T1
+        np.log(theta1) + np.log(popt1[3]) + np.log(2*g/scalar), # T2
+    ]
+    
+    print(
+        f"Parameter standard deviations from GIM:\n{uncerts1}\n"
+    )
+    print(
+        f"Parameter standard deviations from error propagation:\n{uncerts1_2}\n"
+    )
+    print("Variance-Covariance Matrix:\n{}\n".format(vcov1))
+
+    """
+    With propogation of uncertainty
+    """
+    print("\nParameter estimates and 95% confidence intervals:")
+    print(
+        "Nref  = {} ({}--{})".format(
+            Nref1, np.exp(np.log(theta1)-1.96*uncerts1_2[-1])/scalar,
+            np.exp(np.log(theta1)+1.96*uncerts1_2[-1])/scalar
+        )
+    )
+    print(
+        "N0    = {} ({}--{})".format(
+            popt1[0]*Nref1, np.exp(log_params1[0]-1.96*uncerts1_2[0]),
+            np.exp(log_params1[0]+1.96*uncerts1_2[0])
+        )
+    )
+    print(
+        "Nbot  = {} ({}--{})".format(
+            popt1[1]*Nref1, np.exp(log_params1[1]-1.96*uncerts1_2[1]),
+            np.exp(log_params1[1]+1.96*uncerts1_2[1])
+        )
+    )
+    print(
+        "T1    = {} ({}--{})".format(
+            popt1[2]*2*g*Nref1, np.exp(log_params1[2]-1.96*uncerts1_2[2]),
+            np.exp(log_params1[2]+1.96*uncerts1_2[2])
+        )
+    )
+    print(
+        "T2    = {} ({}--{})".format(
+            popt1[3]*2*g*Nref1, np.exp(log_params1[3]-1.96*uncerts1_2[3]),
+            np.exp(log_params1[3]+1.96*uncerts1_2[3])
+        )
+    )
+    print(
+        "misid = {} ({}--{})".format(
+            popt1[4], np.exp(np.log(popt1[4])-1.96*uncerts1_2[4]),
+            np.exp(np.log(popt1[4])+1.96*uncerts1_2[4])
+        )
+    )
+
+    """
+    Uncertainties for segtetraploid bottleneck (model 2)
+    """
+
+    check_grid_sizes2 = True
+    if check_grid_sizes2:
+        print("\nChecking uncertainties with different grid sizes:")
+        for e in [1e-2, 1e-3, 1e-4, 1e-5, 1e-6, 1e-7]:
+    	    u = dadi.Godambe.GIM_uncert(
+                func2_ex, pts_l, all_boot, popt2,
+                data, log=True, multinom=True, eps=e
+            )
+    	    print(f"{e} = {u}")
+    
+    eps=1e-3 # the default is 1e-2
+    uncerts2, GIM2 = dadi.Godambe.GIM_uncert(
+        func2_ex, pts_l, all_boot, popt2, data, log=True,
+        multinom=True, return_GIM=True, eps=eps
+    )
+    vcov2 = np.linalg.inv(GIM2)
+
+    # Do conversions here for propogation of uncertainty
+    # (ie, we're multiplying everything by theta, which is also estimated).
+    uncerts2_2 = [
+        np.sqrt(vcov2[-1,-1] + vcov1[0,0] + 2*vcov1[0,-1]),
+        np.sqrt(vcov2[-1,-1] + vcov1[1,1] + 2*vcov1[1,-1]),
+        np.sqrt(vcov2[-1,-1] + vcov1[2,2] + 2*vcov1[2,-1]),
+        np.sqrt(vcov2[-1,-1] + vcov1[3,3] + 2*vcov1[3,-1]),
+        np.sqrt(vcov2[-1,-1] + vcov1[4,4] + 2*vcov1[4,-1]),
+        uncerts2[5],
+        uncerts2[-1]
+    ]
+    
+    log_params2 = [
+        np.log(theta2) + np.log(popt2[0]) + np.log(1/scalar),   # N0
+        np.log(theta2) + np.log(popt2[1]) + np.log(1/scalar),   # Nbot
+        np.log(theta2) + np.log(popt2[2]) + np.log(2*g/scalar), # T1
+        np.log(theta2) + np.log(popt2[3]) + np.log(2*g/scalar), # T2
+        np.log(theta2) + np.log(popt2[4]) + np.log(scalar/2),   # M
+    ]
+    
+    print(
+        f"Parameter standard deviations from GIM:\n{uncerts2}\n"
+    )
+    print(
+        f"Parameter standard deviations from error propagation:\n{uncerts2_2}\n"
+    )
+    print("Variance-Covariance Matrix:\n{}\n".format(vcov2))
+
+    """
+    With propogation of uncertainty
+    """
+    print("\nParameter estimates and 95% confidence intervals:")
+    print(
+        "Nref  = {} ({}--{})".format(
+            Nref2, np.exp(np.log(theta2)-1.96*uncerts2_2[-1])/scalar,
+            np.exp(np.log(theta2)+1.96*uncerts2_2[-1])/scalar
+        )
+    )
+    print(
+        "N0    = {} ({}--{})".format(
+            popt2[0]*Nref2, np.exp(log_params2[0]-1.96*uncerts2_2[0]),
+            np.exp(log_params2[0]+1.96*uncerts2_2[0])
+        )
+    )
+    print(
+        "Nbot  = {} ({}--{})".format(
+            popt2[1]*Nref2, np.exp(log_params2[1]-1.96*uncerts2_2[1]),
+            np.exp(log_params2[1]+1.96*uncerts2_2[1])
+        )
+    )
+    print(
+        "T1    = {} ({}--{})".format(
+            popt2[2]*2*g*Nref2, np.exp(log_params2[2]-1.96*uncerts2_2[2]),
+            np.exp(log_params2[2]+1.96*uncerts2_2[2])
+        )
+    )
+    print(
+        "T2    = {} ({}--{})".format(
+            popt2[3]*2*g*Nref2, np.exp(log_params2[3]-1.96*uncerts2_2[3]),
+            np.exp(log_params2[3]+1.96*uncerts2_2[3])
+        )
+    )
+    print(
+        "dij   = {} ({}--{})".format(
+            popt2[4]/(2*Nref2), np.exp(log_params2[4]-1.96*uncerts2_2[4]),
+            np.exp(log_params2[4]+1.96*uncerts2_2[4])
+        )
+    )
+    print(
+        "misid = {} ({}--{})".format(
+            popt2[5], np.exp(np.log(popt2[5])-1.96*uncerts2_2[5]),
+            np.exp(np.log(popt2[5])+1.96*uncerts2_2[5])
+        )
+    )
