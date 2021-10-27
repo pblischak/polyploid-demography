@@ -8,7 +8,6 @@ import pylab
 import numpy as np
 from dadi import Numerics, Inference
 
-
 def plot_1d_comp_multinom(
     model1, model2, data, fig_num=None,
     residual='Anscombe', plot_masked=False
@@ -341,7 +340,7 @@ if __name__ == "__main__":
         np.log(theta2) + np.log(popt2[1]) + np.log(1/scalar),   # Nbot
         np.log(theta2) + np.log(popt2[2]) + np.log(2*g/scalar), # T1
         np.log(theta2) + np.log(popt2[3]) + np.log(2*g/scalar), # T2
-        np.log(theta2) + np.log(popt2[4]) + np.log(scalar/2),   # M
+        -np.log(theta2) + np.log(popt2[4]) + np.log(scalar/2),   # M
     ]
     
     print(
