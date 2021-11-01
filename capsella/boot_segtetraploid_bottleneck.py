@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-<< run_allotetraploid_bottleneck.py >>
+<< run_segtetraploid_bottleneck.py >>
 
 
 """
@@ -17,22 +17,24 @@ import nlopt
 import numpy as np
 
 # Defining demographic model
-def allotetraploid_bottleneck(params, ns, pts):
+def segtetraploid_bottleneck(params, ns, pts):
     """
-    params = (nu0,nuBot,T1,T2,misid)
+    params = (nu0,nuBot,T1,T2,dij,misid)
     ns = (n1,n2)
 
     Split into two populations of specifed size.
 
     nu0: Size of populations after split.
-    nuBot: Size of populations after bottleneck.
-    T1: Length of time between split and bottleneck.
-    T2: Length of bottleneck.
+    nuBot: Size of populations after bottleneck
+    T1: Time in the past between split and polyploid formation
+        (in units of 2*Na generations)
+    T2: Time since polyploid formation and bottleneck
     n1,n2: Sample sizes of resulting Spectrum
+    dij: Effective homoeologous exchange rate (2Nm)
     misid: probability of ancestral allele misidentification
     pts: Number of grid points to use in integration
     """
-    nu0,nuBot,T1,T2,misid = params
+    nu0,nuBot,T1,T2,dij,misid = params
     new_ns = [int(ns[0]/2),int(ns[0]/2)]
 
     xx = dadi.Numerics.default_grid(pts)
@@ -41,7 +43,9 @@ def allotetraploid_bottleneck(params, ns, pts):
     phi = dadi.PhiManip.phi_1D_to_2D(xx, phi)
 
     phi = dadi.Integration.two_pops(phi, xx, T1, nu0, nu0)
-    phi = dadi.Integration.two_pops(phi, xx, T2, nuBot, nuBot)
+    phi = dadi.Integration.two_pops(
+        phi, xx, T2, nuBot, nuBot, m12=dij, m21=dij
+    )
 
     fs_2D = dadi.Spectrum.from_phi(
         phi, new_ns, (xx,xx), pop_ids=['CbpA','CbpB']
@@ -52,15 +56,18 @@ def allotetraploid_bottleneck(params, ns, pts):
     return fs_1D
 
 if __name__ == "__main__":
-    # Set up argument parsing
-    # All command line flags are optional
     parser = ap.ArgumentParser(
-        description = "Options for run_allotetraploid_iso.py",
+        description = "Options for run_segtetraploid_iso.py",
         add_help = True
+    )
+    required = parser.add_argument_group("required arguments")
+    required.add_argument(
+        '-r', '--rep', action="store", type=int, required=True,
+        metavar='\b', help="Replicate number"
     )
     optional = parser.add_argument_group("optional arguments")
     optional.add_argument(
-        '--optimization_runs', action="store", type=int, default=100,
+        '--optimization_runs', action="store", type=int, default=50,
         metavar='\b', help="Desired number of independent optimizations"
     )
     optional.add_argument(
@@ -70,13 +77,14 @@ if __name__ == "__main__":
 
     # Get arguments and store
     args              = parser.parse_args()
+    rep               = args.rep
     optimization_runs = args.optimization_runs
     max_failures      = args.max_failures
 
     # Open output file to record optimization results
-    f_out = open("capsella_allotetraploid_bottleneck.csv", 'w')
+    f_out = open(f"capsella_segtetraploid_bottleneck_boot{rep}.csv", 'w')
     print(
-        "loglik", "nu0", "nuBot", "T1", "T2", "misid", "theta",
+        "loglik", "nu0", "nuBot", "T1", "T2", "dij", "misid", "theta",
         sep=",", file=f_out
     )
 
@@ -86,20 +94,24 @@ if __name__ == "__main__":
     )
     data.pop_ids = ["CbpA","CbpB","grand","ori"]
     data = data.marginalize([2,3]).combine_pops([1,2])
+    data = data.sample()
     ns = data.sample_sizes
 
     # Setting up grid points for extrapolation
     pts_l = [50,60,70]
-    func = allotetraploid_bottleneck
+    func = segtetraploid_bottleneck
     func_ex = dadi.Numerics.make_extrap_log_func(func)
 
     # Set bounds
     # nu0,nuBot,T1,T2,misid
-    upper_bound = [100,100,100,100,1.0]
-    lower_bound = [1e-4,1e-4,1e-4,1e-4,0.0]
+    upper_bound = [100.0,100.0,100.0,100.0,10.0,1.0]
+    lower_bound = [1e-4,1e-4,1e-4,1e-4,0.0,0.0]
 
     # Guess at initial parameter values
-    p_init = [1.0,1.0,1.0,1.0,0.05]
+    p_init = [
+        8.0429719, 1.22627327, 16.8074473,
+        2.5559702, 5.576213e-03, 0.030813141
+    ]
 
     # Optimization loop
     opt_successes = 0
@@ -111,7 +123,7 @@ if __name__ == "__main__":
 
         # Perturb parameters to random starting point
         p0 = dadi.Misc.perturb_params(
-            p_init, fold=2, upper_bound=upper_bound,
+            p_init, fold=0.5, upper_bound=upper_bound,
             lower_bound=lower_bound
         )
 
@@ -132,14 +144,14 @@ if __name__ == "__main__":
         model = func_ex(popt, ns, pts_l)
         theta = dadi.Inference.optimal_sfs_scaling(model, data)
         print(
-            LLopt, popt[0], popt[1], popt[2], popt[3], popt[4],
+            LLopt, popt[0], popt[1], popt[2], popt[3], popt[4], popt[5],
             theta, sep=",", file=f_out
         )
         if opt_rep % 10 == 0:
             f_out.flush()
 
     # Finished; print optimization stats
-    print(f"\n\nOptimization finished for Capsella allotetraploid_bottleneck run")
+    print(f"\n\nOptimization finished for Capsella segtetraploid_bottleneck run")
     print(f"  Total number of optimization:      {opt_rep}")
     print(f"  Number of succesful optimizations: {opt_successes} ({round(opt_successes/opt_rep * 100, 3)}%)")
     print(f"  Number of failed optimizations:    {opt_failures}  ({round(opt_failures/opt_rep * 100, 3)}%)\n\n")

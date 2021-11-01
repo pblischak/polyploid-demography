@@ -145,3 +145,4 @@ if __name__ == "__main__":
     print(f"  Total number of optimization:      {opt_rep}")
     print(f"  Number of succesful optimizations: {opt_successes} ({round(opt_successes/opt_rep * 100, 3)}%)")
     print(f"  Number of failed optimizations:    {opt_failures}  ({round(opt_failures/opt_rep * 100, 3)}%)\n\n")
+    f_out.close()

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-<< run_allotetraploid_bottleneck.py >>
+<< boot_allotetraploid_bottleneck.py >>
 
 
 """
@@ -58,9 +58,14 @@ if __name__ == "__main__":
         description = "Options for run_allotetraploid_iso.py",
         add_help = True
     )
+    required = parser.add_argument_group("required arguments")
+    required.add_argument(
+        '-r', '--rep', action="store", type=int, required=True,
+        metavar='\b', help="Replicate number"
+    )
     optional = parser.add_argument_group("optional arguments")
     optional.add_argument(
-        '--optimization_runs', action="store", type=int, default=100,
+        '--optimization_runs', action="store", type=int, default=50,
         metavar='\b', help="Desired number of independent optimizations"
     )
     optional.add_argument(
@@ -70,11 +75,12 @@ if __name__ == "__main__":
 
     # Get arguments and store
     args              = parser.parse_args()
+    rep               = args.rep
     optimization_runs = args.optimization_runs
     max_failures      = args.max_failures
 
     # Open output file to record optimization results
-    f_out = open("capsella_allotetraploid_bottleneck.csv", 'w')
+    f_out = open(f"capsella_allotetraploid_bottleneck_boot{rep}.csv", 'w')
     print(
         "loglik", "nu0", "nuBot", "T1", "T2", "misid", "theta",
         sep=",", file=f_out
@@ -86,6 +92,7 @@ if __name__ == "__main__":
     )
     data.pop_ids = ["CbpA","CbpB","grand","ori"]
     data = data.marginalize([2,3]).combine_pops([1,2])
+    data = data.sample()
     ns = data.sample_sizes
 
     # Setting up grid points for extrapolation
@@ -99,7 +106,10 @@ if __name__ == "__main__":
     lower_bound = [1e-4,1e-4,1e-4,1e-4,0.0]
 
     # Guess at initial parameter values
-    p_init = [1.0,1.0,1.0,1.0,0.05]
+    p_init = [
+        16.13550897,   0.1953863,  1.9726986,
+        0.507677479, 0.016506372
+    ]
 
     # Optimization loop
     opt_successes = 0
@@ -111,7 +121,7 @@ if __name__ == "__main__":
 
         # Perturb parameters to random starting point
         p0 = dadi.Misc.perturb_params(
-            p_init, fold=2, upper_bound=upper_bound,
+            p_init, fold=0.5, upper_bound=upper_bound,
             lower_bound=lower_bound
         )
 
