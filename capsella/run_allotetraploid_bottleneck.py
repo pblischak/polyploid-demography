@@ -99,7 +99,7 @@ if __name__ == "__main__":
     lower_bound = [1e-4,1e-4,1e-4,1e-4,0.0]
 
     # Guess at initial parameter values
-    p_init = [1.0,1.0,1.0,1.0,0.05]
+    p_init = [20.0,0.2,2.0,0.5,0.05]
 
     # Optimization loop
     opt_successes = 0
@@ -120,7 +120,8 @@ if __name__ == "__main__":
             popt,LLopt = dadi.Inference.opt(
                 p0, data, func_ex, pts_l,
                 lower_bound=lower_bound, upper_bound=upper_bound,
-                maxeval=int(1e3), maxtime=int(3600), verbose=10
+                verbose=10
+                #maxeval=int(1e3), maxtime=int(3600), verbose=10
             )
             opt_successes +=1
         except:
