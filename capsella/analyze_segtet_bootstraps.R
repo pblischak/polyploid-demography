@@ -1,10 +1,10 @@
 library(tidyverse)
 
-results_files <- list.files(path = "allotet_boots/", pattern = "csv")
+results_files <- list.files(path = "segtet_boots/", pattern = "csv")
 
 get_best_loglik <- function(input_file){
-	df <- read_csv(paste0("allotet_boots/",input_file))
-	return(df[order(df$loglik, decreasing = TRUE),][1,])
+  df <- read_csv(paste0("segtet_boots/",input_file))
+  return(df[order(df$loglik, decreasing = TRUE),][1,])
 }
 
 res <- plyr::ldply(results_files, get_best_loglik)

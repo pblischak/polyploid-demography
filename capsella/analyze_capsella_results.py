@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import pylab
 import numpy as np
 from dadi import Numerics, Inference
+from sys import exit
 
 def plot_1d_comp_multinom(
     model1, model2, data, fig_num=None,
@@ -186,23 +187,24 @@ if __name__ == "__main__":
     func2_ex = dadi.Numerics.make_extrap_log_func(func2)
 
     popt1 = [
-        16.13550897,   0.1953863,  1.9726986,
-        0.507677479, 0.016506372
+        100.000000, 0.2023164, 2.064304,
+        0.5392525, 0.01660832
     ]
     popt2 = [
-        8.0429719, 1.22627327, 16.8074473,
-        2.5559702, 5.576213e-03, 0.030813141
+        100.00000000, 7.166250, 100.00000,
+        18.3723521, 0.0009271943, 0.031397990
     ]
 
     model1 = func1_ex(popt1, data.sample_sizes, pts_l)
     model2 = func2_ex(popt2, data.sample_sizes, pts_l)
 
-    #plot_1d_comp_multinom(model1, model2, data, fig_num=1)
+    plot_1d_comp_multinom(model1, model2, data, fig_num=1)
+    exit(0)
 
-    llik1  = -651.3589
-    theta1 = 5584.862
-    llik2  = -515.0822
-    theta2 = 978.8552
+    llik1  = -651.0186
+    theta1 = 5393.922
+    llik2  = -512.4066
+    theta2 = 167.3206
 
     mu = 7.0e-9 # mutation rate
     L  = 773748 # sequence length
