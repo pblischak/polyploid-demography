@@ -14,6 +14,8 @@ get_best_loglik <- function(input_file){
 }
 
 res <- plyr::ldply(results_files, get_best_loglik)
+names(res)[11] <- "eij_true"
+names(res)[12] <- "eij_est"
 
 T2_df <- data.frame(
 	Type = c("GBS","GBS","WGS","WGS"),
@@ -30,25 +32,35 @@ A <- res %>% ggplot(aes(x=Type, y=T2_est)) +
 		position=position_dodge(), color="blue", alpha = 0.4
 	) +
 	theme_bw() +
+  theme(
+    plot.title = element_text(size=18),
+    axis.text = element_text(size=16),
+    axis.title = element_text(size=16)
+  ) +
 	ggtitle(
-		"Segmental Allotetraploid Formation Time"
+		"Formation Time"
 	)
 
-dij_df <- data.frame(
+eij_df <- data.frame(
 	Type = c("GBS","GBS","WGS","WGS"),
-	dij_true = c(0.1,0.001,0.1,0.001),
+	eij_true = c(0.1,0.001,0.1,0.001),
 	value = c(0.1,0.001,0.1,0.001)
 )
 
-B <- res %>% ggplot(aes(x=Type, y=dij_est)) +
+B <- res %>% ggplot(aes(x=Type, y=eij_est)) +
 	geom_boxplot(alpha = 0.5) +
 	geom_jitter(alpha = 0.8, width = 0.1) + 
-	facet_wrap(.~dij_true) +
+	facet_wrap(.~eij_true) +
 	geom_errorbar(
-		data=dij_df, aes(y=NULL, ymin=value, ymax=value), size = 1.25,
+		data=eij_df, aes(y=NULL, ymin=value, ymax=value), size = 1.25,
 		position=position_dodge(), color="blue", alpha = 0.4
 	) +
 	theme_bw() +
+  theme(
+    plot.title = element_text(size=18),
+    axis.text = element_text(size=16),
+    axis.title = element_text(size=16)
+  ) +
 	ggtitle(
 		"Homoeologous Exchange Rate"
 	)
@@ -62,15 +74,21 @@ nuBot_df <- data.frame(
 C <- res %>% ggplot(aes(x=Type, y=nuBot_est)) +
 	geom_boxplot(alpha = 0.5) +
 	geom_jitter(alpha = 0.8, width = 0.1) + 
-	facet_wrap(.~T2_true) +
+	# facet_wrap(.~T2_true) +
 	geom_errorbar(
 		data=nuBot_df, aes(y=NULL, ymin=value, ymax=value), size = 1.25,
 		position=position_dodge(), color="blue", alpha = 0.4
 	) +
 	theme_bw() +
+  theme(
+    plot.title = element_text(size=18),
+    axis.text = element_text(size=16),
+    axis.title = element_text(size=16)
+  ) +
 	ggtitle(
-		"Segmental Allotetraploid Effective Population Size"
+		"Effective Population Size"
 	)
 
 (A | B) / C
+# A + B
 ggsave("segtetraploid_bottleneck_optimization.pdf", width = 10, height = 8)

@@ -30,8 +30,13 @@ A <- res %>% ggplot(aes(x=Type, y=nuBot_est)) +
 		position=position_dodge(), color="blue", alpha = 0.4
 	) +
 	theme_bw() +
+  theme(
+    plot.title = element_text(size=18),
+    axis.text = element_text(size=16),
+    axis.title = element_text(size=16)
+  ) +
 	ggtitle(
-		"Allotetraploid Effective Population Size"
+		"Effective Population Size"
 	)
 
 T2_df <- data.frame(
@@ -49,8 +54,13 @@ B <- res %>% ggplot(aes(x=Type, y=T2_est)) +
 		position=position_dodge(), color="blue", alpha = 0.4
 	) +
 	theme_bw() +
+  theme(
+    plot.title = element_text(size=18),
+    axis.text = element_text(size=16),
+    axis.title = element_text(size=16)
+  ) +
 	ggtitle(
-		"Allotetraploid Formation Time"
+		"Formation Time"
 	)
 
 A + B
