@@ -33,7 +33,9 @@ A <- res %>% ggplot(aes(x=Type, y=nuBot_est)) +
   theme(
     plot.title = element_text(size=18),
     axis.text = element_text(size=16),
-    axis.title = element_text(size=16)
+    axis.title = element_text(size=16),
+    strip.text.x = element_text(size = 16),
+    strip.text.y = element_text(size = 16)
   ) +
 	ggtitle(
 		"Effective Population Size"
@@ -57,7 +59,9 @@ B <- res %>% ggplot(aes(x=Type, y=T2_est)) +
   theme(
     plot.title = element_text(size=18),
     axis.text = element_text(size=16),
-    axis.title = element_text(size=16)
+    axis.title = element_text(size=16),
+    strip.text.x = element_text(size = 16),
+    strip.text.y = element_text(size = 16)
   ) +
 	ggtitle(
 		"Formation Time"

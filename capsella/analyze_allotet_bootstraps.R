@@ -9,14 +9,14 @@ get_best_loglik <- function(input_file){
 
 res <- plyr::ldply(results_files, get_best_loglik)
 
-q025 <- apply(res, 2, function(x) quantile(x,0.025))
-print(q025)
-
-q975 <- apply(res, 2, function(x) quantile(x,0.975))
-print(q975)
+# q025 <- apply(res, 2, function(x) quantile(x,0.025))
+# print(q025)
+# 
+# q975 <- apply(res, 2, function(x) quantile(x,0.975))
+# print(q975)
 
 avg <- apply(res, 2, mean)
 stdev <- apply(res, 2, sd)
 
-print(avg - stdev)
-print(avg + stdev)
+print(avg - 1.96 * stdev / sqrt(nrow(res)))
+print(avg + 1.96 * stdev / sqrt(nrow(res)))

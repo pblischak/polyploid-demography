@@ -9,6 +9,13 @@ import numpy as np
 from dadi import Numerics, Inference
 from sys import exit
 
+CB_color_cycle = [
+    '#377eb8', '#ff7f00', '#4daf4a',
+    '#f781bf', '#a65628', '#984ea3',
+    '#999999', '#e41a1c', '#dede00'
+]
+
+
 def plot_1d_comp_multinom(
     model1, model2, data, fig_num=None,
     residual='Anscombe', plot_masked=False
@@ -58,7 +65,7 @@ def plot_1d_comp_Poisson(
     if fig_num is None:
         f = pylab.gcf()
     else:
-        f = pylab.figure(fig_num, figsize=(10,8))
+        f = pylab.figure(fig_num, figsize=(5,4))
     pylab.clf()
 
     if data.folded and not model1.folded:
@@ -71,9 +78,9 @@ def plot_1d_comp_Poisson(
     masked_model2, masked_data = Numerics.intersect_masks(model2, data)
 
     ax = pylab.subplot(2,1,1)
-    pylab.semilogy(masked_data, '-ob')
-    pylab.semilogy(masked_model1, '-or')
-    pylab.semilogy(masked_model2, '-og')
+    pylab.semilogy(masked_data, '-o', color=CB_color_cycle[0])
+    pylab.semilogy(masked_model1, '-o', color=CB_color_cycle[1])
+    pylab.semilogy(masked_model2, '-o', color=CB_color_cycle[2])
 
     if plot_masked:
         pylab.semilogy(masked_data.data, '--ob', mfc='w', zorder=-100)
@@ -97,6 +104,7 @@ def plot_1d_comp_Poisson(
         pylab.plot(resid2.data, '--om', mfc='w', zorder=-100)
 
     ax.set_xlim(0, data.shape[0]-1)
+    ax.set_xticks([0, 5, 10, 15, 20])
     if show:
         pylab.show()
 
@@ -199,7 +207,7 @@ if __name__ == "__main__":
     model1 = func1_ex(popt1, data.sample_sizes, pts_l)
     model2 = func2_ex(popt2, data.sample_sizes, pts_l)
 
-    # plot_1d_comp_multinom(model1, model2, data, fig_num=1)
+    plot_1d_comp_multinom(model1, model2, data, fig_num=1)
 
     llik1  = -651.0186
     theta1 = 5393.922

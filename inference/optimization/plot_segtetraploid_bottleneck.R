@@ -35,7 +35,9 @@ A <- res %>% ggplot(aes(x=Type, y=T2_est)) +
   theme(
     plot.title = element_text(size=18),
     axis.text = element_text(size=16),
-    axis.title = element_text(size=16)
+    axis.title = element_text(size=16),
+    strip.text.x = element_text(size = 16),
+    strip.text.y = element_text(size = 16)
   ) +
 	ggtitle(
 		"Formation Time"
@@ -47,7 +49,7 @@ eij_df <- data.frame(
 	value = c(0.1,0.001,0.1,0.001)
 )
 
-B <- res %>% ggplot(aes(x=Type, y=eij_est)) +
+C <- res %>% ggplot(aes(x=Type, y=eij_est)) +
 	geom_boxplot(alpha = 0.5) +
 	geom_jitter(alpha = 0.8, width = 0.1) + 
 	facet_wrap(.~eij_true) +
@@ -59,7 +61,9 @@ B <- res %>% ggplot(aes(x=Type, y=eij_est)) +
   theme(
     plot.title = element_text(size=18),
     axis.text = element_text(size=16),
-    axis.title = element_text(size=16)
+    axis.title = element_text(size=16),
+    strip.text.x = element_text(size = 16),
+    strip.text.y = element_text(size = 16)
   ) +
 	ggtitle(
 		"Homoeologous Exchange Rate"
@@ -71,7 +75,7 @@ nuBot_df <- data.frame(
 	value = c(0.5,0.5,0.5,0.5)
 )
 
-C <- res %>% ggplot(aes(x=Type, y=nuBot_est)) +
+B <- res %>% ggplot(aes(x=Type, y=nuBot_est)) +
 	geom_boxplot(alpha = 0.5) +
 	geom_jitter(alpha = 0.8, width = 0.1) + 
 	# facet_wrap(.~T2_true) +
@@ -83,10 +87,12 @@ C <- res %>% ggplot(aes(x=Type, y=nuBot_est)) +
   theme(
     plot.title = element_text(size=18),
     axis.text = element_text(size=16),
-    axis.title = element_text(size=16)
+    axis.title = element_text(size=16),
+    strip.text.x = element_text(size = 16),
+    strip.text.y = element_text(size = 16)
   ) +
 	ggtitle(
-		"Effective Population Size"
+		"Bottleneck Size"
 	)
 
 (A | B) / C
