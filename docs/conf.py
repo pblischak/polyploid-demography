@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'polyploid-demography'
-copyright = '2020, Paul Blischak'
+copyright = '2022, Paul Blischak'
 author = 'Paul Blischak'
 
 # The full version, including alpha/beta/rc tags

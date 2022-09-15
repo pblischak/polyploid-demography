@@ -3,8 +3,12 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Demographic Inference in Polyploids
-===================================
+Demographic History Inference and the Polyploid Continuum
+=========================================================
+
+.. note::
+
+   This site is under construction. Documentation is still being added.
 
 Documentation
 =============
@@ -13,10 +17,8 @@ Documentation
    :maxdepth: 1
 
    simulations.rst
-   bnapus_snp.rst
-   bnapus_demog.rst
-   arenosa_snp.rst
-   arenosa_demog.rst
+   dadi.rst
+   capsella.rst
 
 Indices and tables
 ==================

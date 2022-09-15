@@ -10,3 +10,4 @@ docs/_template
 .Rhistory
 *.pdf
 batch_*
+.vscode/
