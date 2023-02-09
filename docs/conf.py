@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'polyploid-demography'
-copyright = '2022, Paul Blischak'
+copyright = '2023, Paul Blischak'
 author = 'Paul Blischak'
 
 # The full version, including alpha/beta/rc tags
@@ -61,14 +61,16 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # a list of builtin themes.
 #
 #html_theme = 'alabaster'
-import sphinx_rtd_theme
-html_theme = "sphinx_rtd_theme"
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+# import sphinx_rtd_theme
+# html_theme = "sphinx_rtd_theme"
+# html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+html_theme = "furo"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+html_title = "polyploid-demography"
 
 # -- Options for HTMLHelp output ------------------------------------------
 
