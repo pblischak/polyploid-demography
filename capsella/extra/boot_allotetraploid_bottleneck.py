@@ -7,7 +7,7 @@
 """
 
 # Import system-level libraries
-from sys import argv,exit
+from sys import argv, exit
 import argparse as ap
 
 # Import installed libraries
@@ -17,6 +17,8 @@ import nlopt
 import numpy as np
 
 # Defining demographic model
+
+
 def allotetraploid_bottleneck(params, ns, pts):
     """
     params = (nu0,nuBot,T1,T2,misid)
@@ -32,8 +34,8 @@ def allotetraploid_bottleneck(params, ns, pts):
     misid: probability of ancestral allele misidentification
     pts: Number of grid points to use in integration
     """
-    nu0,nuBot,T1,T2,misid = params
-    new_ns = [int(ns[0]/2),int(ns[0]/2)]
+    nu0, nuBot, T1, T2, misid = params
+    new_ns = [int(ns[0]/2), int(ns[0]/2)]
 
     xx = dadi.Numerics.default_grid(pts)
 
@@ -44,19 +46,20 @@ def allotetraploid_bottleneck(params, ns, pts):
     phi = dadi.Integration.two_pops(phi, xx, T2, nuBot, nuBot)
 
     fs_2D = dadi.Spectrum.from_phi(
-        phi, new_ns, (xx,xx), pop_ids=['CbpA','CbpB']
+        phi, new_ns, (xx, xx), pop_ids=['CbpA', 'CbpB']
     )
     if misid > 0.0:
-        fs_2D = dadi.Numerics.apply_anc_state_misid(fs_2D,misid)
-    fs_1D = fs_2D.combine_pops([1,2])
+        fs_2D = dadi.Numerics.apply_anc_state_misid(fs_2D, misid)
+    fs_1D = fs_2D.combine_pops([1, 2])
     return fs_1D
+
 
 if __name__ == "__main__":
     # Set up argument parsing
     # All command line flags are optional
     parser = ap.ArgumentParser(
-        description = "Options for run_allotetraploid_iso.py",
-        add_help = True
+        description="Options for run_allotetraploid_iso.py",
+        add_help=True
     )
     required = parser.add_argument_group("required arguments")
     required.add_argument(
@@ -74,10 +77,10 @@ if __name__ == "__main__":
     )
 
     # Get arguments and store
-    args              = parser.parse_args()
-    rep               = args.rep
+    args = parser.parse_args()
+    rep = args.rep
     optimization_runs = args.optimization_runs
-    max_failures      = args.max_failures
+    max_failures = args.max_failures
 
     # Open output file to record optimization results
     f_out = open(f"capsella_allotetraploid_bottleneck_boot{rep}.csv", 'w')
@@ -90,20 +93,20 @@ if __name__ == "__main__":
     data = dadi.Spectrum.from_file(
         "Capsella_intergene_4fold_corr_4pop_4_DSFS.fs"
     )
-    data.pop_ids = ["CbpA","CbpB","grand","ori"]
-    data = data.marginalize([2,3]).combine_pops([1,2])
+    data.pop_ids = ["CbpA", "CbpB", "grand", "ori"]
+    data = data.marginalize([2, 3]).combine_pops([1, 2])
     data = data.sample()
     ns = data.sample_sizes
 
     # Setting up grid points for extrapolation
-    pts_l = [50,60,70]
+    pts_l = [50, 60, 70]
     func = allotetraploid_bottleneck
     func_ex = dadi.Numerics.make_extrap_log_func(func)
 
     # Set bounds
     # nu0,nuBot,T1,T2,misid
-    upper_bound = [100,100,100,100,1.0]
-    lower_bound = [1e-4,1e-4,1e-4,1e-4,0.0]
+    upper_bound = [100, 100, 100, 100, 1.0]
+    lower_bound = [1e-4, 1e-4, 1e-4, 1e-4, 0.0]
 
     # Guess at initial parameter values
     p_init = [
@@ -127,15 +130,15 @@ if __name__ == "__main__":
 
         # Attempt optimization and record success/failure
         try:
-            popt,LLopt = dadi.Inference.opt(
+            popt, LLopt = dadi.Inference.opt(
                 p0, data, func_ex, pts_l,
                 lower_bound=lower_bound, upper_bound=upper_bound,
                 maxeval=int(1e3), maxtime=int(3600), verbose=10
             )
-            opt_successes +=1
+            opt_successes += 1
         except:
             print(f"WARNING: Optimization failed for round {opt_rep+1}...")
-            opt_failures +=1
+            opt_failures += 1
             continue
 
         # Compare data and model, record results
@@ -151,6 +154,8 @@ if __name__ == "__main__":
     # Finished; print optimization stats
     print(f"\n\nOptimization finished for Capsella allotetraploid_bottleneck run")
     print(f"  Total number of optimization:      {opt_rep}")
-    print(f"  Number of succesful optimizations: {opt_successes} ({round(opt_successes/opt_rep * 100, 3)}%)")
-    print(f"  Number of failed optimizations:    {opt_failures}  ({round(opt_failures/opt_rep * 100, 3)}%)\n\n")
+    print(
+        f"  Number of succesful optimizations: {opt_successes} ({round(opt_successes/opt_rep * 100, 3)}%)")
+    print(
+        f"  Number of failed optimizations:    {opt_failures}  ({round(opt_failures/opt_rep * 100, 3)}%)\n\n")
     f_out.close()
