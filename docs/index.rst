@@ -23,10 +23,10 @@ Documentation
 .. toctree::
    :maxdepth: 1
 
-   tutorial
    simulations
    dadi
    capsella
+   tutorial
 
 ----
 

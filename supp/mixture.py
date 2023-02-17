@@ -73,7 +73,10 @@ for ii in range(1, 3):
     ax.plot(fs_high, label=r"$E_{i \leftrightarrow j} = 20$")
     ax.plot(
         fs_mix,
-        label=r"$\frac{1}{2} (E_{i \leftrightarrow j} = 0) + \frac{1}{2} (E_{i\leftrightarrow j} = 20)$",
+        label=(
+            r"$\frac{1}{2} (E_{i \leftrightarrow j} = 0) + "
+            + r"\frac{1}{2} (E_{i\leftrightarrow j} = 20)$"
+        ),
     )
     ax.plot(fs_mid, label=r"$E_{i \leftrightarrow j} = 0.21$")
     # Plot fit result, accounting for multinomial scaling

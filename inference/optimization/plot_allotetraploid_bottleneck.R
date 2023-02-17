@@ -38,7 +38,7 @@ A <- res %>% ggplot(aes(x=Type, y=nuBot_est)) +
     strip.text.y = element_text(size = 16)
   ) +
 	ggtitle(
-		"Effective Population Size"
+		"Bottleneck Size"
 	)
 
 T2_df <- data.frame(

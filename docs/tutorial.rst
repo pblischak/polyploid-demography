@@ -4,7 +4,7 @@ Tutorial
 ========
 
 In this tutorial we'll walk through building demographic models in both SLiM
-and dadi, focusing on how to capture the appropriate types of chromosomal
+and dadi, focusing on how to capture the appropriate chromosomal
 dynamics for the different types of polyploids.
 We'll also cover how to think about converting polyploid parameter values from 
 "real" units to the scaled, genetic units used by dadi. Finally, we'll go through
