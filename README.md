@@ -14,6 +14,12 @@ on our **Read the Docs** website (link above), as well as within the comments of
 the scripts in this repository. The website also has a tutorial section to help
 users get started with building demographic models for polyploids using dadi.
 
+> **Note**
+> While working on the manuscript we changed the homoeologous exchange parameter
+> from $d_{i \leftrightarrow j}$ to $e_{i \leftrightarrow j}$. Because, of this
+> some of the code may still have `dij` as a parameter but it represents the
+> same thing.
+
 **Preprint information**
 
 Blischak, PD, M Sajan, MS Barker, RN Gutenkunst. 2022. Demographic history
