@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import dadi
-import numpy as np
 import matplotlib.pyplot as plt
 
 
@@ -68,7 +67,7 @@ def segtetraploid_bottleneck(params, ns, pts):
 
 if __name__ == "__main__":
     """
-    Make a single plot with two bottleneck sizes: 0.1*nu0 and 0.5*nu0
+    Make a single plot with two bottleneck sizes: 0.1 x nu0 and 0.5 x nu0
 
     These two bottleneck sizes will be in the rows and the three models
     will each have their own column.
