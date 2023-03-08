@@ -66,8 +66,8 @@ def Cg_Co(params, ns, pts):
           - nu_CgF: Final population size for C. grandiflora
           - nu_Co0: Initial population size for C. orientalis
           - nu_CoF: Final population size for C. orientalis
-          - T1: Time period of constant pop size after split
-          - T2: Time period of exponential growth after split
+          - T1: Time period of recent exponential growth after split
+          - T2: Time period of initial constant pop size after split
 
     ns : Tuple[int]
         The sample sizes for the modeled populations.
@@ -85,12 +85,12 @@ def Cg_Co(params, ns, pts):
     phi = dadi.PhiManip.phi_1D(xx)
     phi = dadi.PhiManip.phi_1D_to_2D(xx, phi)
 
-    phi = dadi.Integration.two_pops(phi, xx, T1, 1, nu_Co0)
+    phi = dadi.Integration.two_pops(phi, xx, T2, 1, nu_Co0)
 
-    nu_Cg_func = lambda t: nu_CgF ** (t / T2)
-    nu_Co_func = lambda t: nu_Co0 * (nu_CoF / nu_Co0) ** (t / T2)
+    nu_Cg_func = lambda t: nu_CgF ** (t / T1)
+    nu_Co_func = lambda t: nu_Co0 * (nu_CoF / nu_Co0) ** (t / T1)
 
-    phi = dadi.Integration.two_pops(phi, xx, T2, nu_Cg_func, nu_Co_func)
+    phi = dadi.Integration.two_pops(phi, xx, T1, nu_Cg_func, nu_Co_func)
 
     return dadi.Spectrum.from_phi(
         phi, ns, (xx, xx), pop_ids=["C. grandiflora", "C. orientalis"]
@@ -113,8 +113,8 @@ def Co_CbpB(params, ns, pts):
           - nu_CoF: Final population size for C. orientalis
           - nu_CbpB0: Initial population size for C. bursa-pastoris subgenome B
           - nu_CbpBF: Final population size for C. bursa-pastoris subgenome B
-          - T1: Time period of constant pop size for Co
-          - T2: Time period of exp. growth after split between Co and CbpB
+          - T1: Time period of exp. growth after split between Co and CbpB
+          - T2: Time period of constant pop size for Co
 
     ns : Tuple[int]
         The sample sizes for the modeled populations.
@@ -130,14 +130,14 @@ def Co_CbpB(params, ns, pts):
     xx = dadi.Numerics.default_grid(pts)
 
     phi = dadi.PhiManip.phi_1D(xx)
-    phi = dadi.Integration.one_pop(phi, xx, T1, nu_Co0)
+    phi = dadi.Integration.one_pop(phi, xx, T2, nu_Co0)
 
     phi = dadi.PhiManip.phi_1D_to_2D(xx, phi)
 
-    nu_Co_func = lambda t: nu_Co0 * (nu_CoF / nu_Co0) ** (t / T2)
-    nu_CbpB_func = lambda t: nu_CbpB0 * (nu_CbpBF / nu_CbpB0) ** (t / T2)
+    nu_Co_func = lambda t: nu_Co0 * (nu_CoF / nu_Co0) ** (t / T1)
+    nu_CbpB_func = lambda t: nu_CbpB0 * (nu_CbpBF / nu_CbpB0) ** (t / T1)
 
-    phi = dadi.Integration.two_pops(phi, xx, T2, nu_Co_func, nu_CbpB_func)
+    phi = dadi.Integration.two_pops(phi, xx, T1, nu_Co_func, nu_CbpB_func)
 
     return dadi.Spectrum.from_phi(
         phi, ns, (xx, xx), pop_ids=["C. orientalis", "C. bursa-pastoris B"]
@@ -161,8 +161,8 @@ def CbpA_CbpB(params, ns, pts):
           - nu_CbpAF: Final population size for C. bursa-pastoris subgenome A
           - nu_CbpB0: Initial population size for C. bursa-pastoris subgenome B
           - nu_CbpBF: Final population size for C. bursa-pastoris subgenome B
-          - T1: Time period of constant pop size for parental pops (Cg and Co)
-          - T2: Time period of size change and exp. growth after Cbp formation
+          - T1: Time period of size change and exp. growth after Cbp formation
+          - T2: Time period of constant pop size for parental pops (Cg and Co)
 
     ns : Tuple[int]
         The sample sizes for the modeled populations.
@@ -180,12 +180,12 @@ def CbpA_CbpB(params, ns, pts):
     phi = dadi.PhiManip.phi_1D(xx)
     phi = dadi.PhiManip.phi_1D_to_2D(xx, phi)
 
-    phi = dadi.Integration.two_pops(phi, xx, T1, 1, nu_Co0)
+    phi = dadi.Integration.two_pops(phi, xx, T2, 1, nu_Co0)
 
-    nu_CbpA_func = lambda t: nu_CbpA0 * (nu_CbpAF / nu_CbpA0) ** (t / T2)
-    nu_CbpB_func = lambda t: nu_CbpB0 * (nu_CbpBF / nu_CbpB0) ** (t / T2)
+    nu_CbpA_func = lambda t: nu_CbpA0 * (nu_CbpAF / nu_CbpA0) ** (t / T1)
+    nu_CbpB_func = lambda t: nu_CbpB0 * (nu_CbpBF / nu_CbpB0) ** (t / T1)
 
-    phi = dadi.Integration.two_pops(phi, xx, T2, nu_CbpA_func, nu_CbpB_func)
+    phi = dadi.Integration.two_pops(phi, xx, T1, nu_CbpA_func, nu_CbpB_func)
 
     return dadi.Spectrum.from_phi(
         phi,
