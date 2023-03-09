@@ -1,5 +1,5 @@
 /*
-	Segmental allotetraploidy (isolation only):
+	Segmental allotetraploid (no bottleneck)
 
 	Example usage:
 
@@ -8,32 +8,44 @@
 	Parameters:
 
 		T1: The amount of time in dadi units (# of 2N generations) that the parents
-				are isolated before forming the allotetraploid.
+			are isolated before forming the allotetraploid.
 		T2: The amount of time the allotetraploid lineage has existed before we sample
-				it.
+			it.
 		dij: The probability of subgenomic exchange (homoeologous crossover) each
-				 generation.
+			 generation.
 		rep: Simulation replicate number (for running things in a for loop or
-				 an array job on an HPC).
+			 an array job on an HPC).
 */
 
 initialize() {
+	// Use the rep number to modify the starting seed.
+	// Useful when running on a cluster with jobs starting at the same time.
 	setSeed(rdunif(1, 0, asInteger(2^60) - 1)+asInteger(rep));
 
-	defineConstant("K", 1000);
-	defineConstant("L", 1e6); // total bp length
+	// Number of individuals in population
+	defineConstant("N", 1000);
+
+	// Length of sequence (L)
+	defineConstant("L", 1e6);
+
+	// Mutation rate
+	defineConstant("mu", 1.25e-6);
 
 	initializeMutationType("m1", 0.5, "f", 0.0);
 	m1.convertToSubstitution = T;
 
 	initializeGenomicElementType("g1", m1, 1.0);
 	initializeGenomicElement(g1, 0, L - 1);
-	initializeMutationRate(1.25e-6);
+	initializeMutationRate(mu);
 	initializeRecombinationRate(1.25e-6);
 }
 
+/*
+Setup initial diploid ancestral population with N individuals. Schedule the start
+of homoeologous exchange at generation (2N * T1) and sampling time at (2N * (T1 + T2)).
+*/
 1 {
-	sim.addSubpop("p1", K);
+	sim.addSubpop("p1", N);
 	sim.rescheduleScriptBlock(
 		s1,
 		asInteger(20000 + 2000 * asFloat(T1)),
@@ -46,20 +58,30 @@ initialize() {
 	);
 }
 
+// Burn-in here is 10 * 2 * 1000 = 20_000 generations.
 20000: late() {
 	catn(sim.generation + "\t" + p1.individualCount + "\t" + p2.individualCount);
 }
 
+// Split population after burn-in
 20000 {
-	sim.addSubpopSplit("p2", K, p1);
+	sim.addSubpopSplit("p2", N, p1);
 }
 
+/*
+Block is rescheduled in generation 1. This block  sets the homoeologous exchange
+(in this case it is migration) rate.
+*/
 s1 10 late() {
 	// Set subgenome exchange (migration) rates
 	p1.setMigrationRates(p2, asFloat(dij));
 	p2.setMigrationRates(p1, asFloat(dij));
 }
 
+/*
+Block is rescheduled in generation 1. This block is to sample individuals and to
+generate the SFS.
+*/
 s2 10 late() {
 	/*
 		Here we go through and sample 20 chromosomes each from the two populations that make

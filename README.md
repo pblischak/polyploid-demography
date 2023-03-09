@@ -11,8 +11,7 @@ in polyploid species. The models are implemented in the open-source Python packa
 Each folder corresponds to a different analysis from the accompanying manuscript
 (<a href="" target="_blank">link</a>). More detailed documentation can be found
 on our **Read the Docs** website (link above), as well as within the comments of
-the scripts in this repository. The website also has a tutorial section to help
-users get started with building demographic models for polyploids using dadi.
+the scripts in this repository.
 
 > **Note**
 > 

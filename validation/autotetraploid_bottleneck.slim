@@ -1,35 +1,31 @@
 // Peter Ralph, 10 September 2019: autotetraploidy
 // Modified by Paul Blischak, 29 September 2020
+
 /*
-	Tetraploidy:
+	Autopolyploid bottleneck
 
-	This is a simple model of an autotetraploid.  To do this, we have to
-	(a) give each individual *four* genomes
-	(b) let crossing-over happen between any of the possible pairings
-	(c) compute fitness with all four genomes
+	Example usage:
 
-	(a) Four genomes: the "real" individuals are in p1. Each individual has their other two genomes stashed
-	away in an individual in p2; the individuals in p2 don't do anything on their own. To identify them,
-	each individual in p1 has a "tag" that records the index of their pair in p2, so that
-	  p2.individuals[ind.tag].genomes
-	gets you the other two genomes for individual "ind" in p1. (To create these associations, we give each
-	individual a unique label, stored in their tagF property.) After an individual dies, we clean up their
-	paired individual by setting their fitness to 0.0 in the following generation. So, there's always more
-	individuals in p2 than in p1; the difference is individuals in p2 whose pair in p1 has just died.
+	slim -d "nuBot=0.1" -d "rep=1" autotetraploid_snm.slim
 
-	(b) For crossing-over, we pick random orderings of each of the mates' four genomes,
-	then do crossing-over between pairs.
-
-	(c) Every new mutation has a property, "h", that is a vector of length 5, always starting with 0 and ending
-	with 1, that has randomly chosen dominance coefficients. Then, the contribution to fitness of having
-	k copies of a mutation is h[k] * s, where recall that: indexing is zero-based; fitness is multiplicative; and
-	since this is a nonWF model, "fitness" means probability of survival until the next generation.
+	Parameters:
+		nuBot: Proportion of the ancestral population size remaining after bottleneck.
+		rep: Simulation replicate number (for running things in a for loop or
+			 an array job on an HPC).
 */
 
 initialize() {
+	// Use the rep number to modify the starting seed.
+	// Useful when running on a cluster with jobs starting at the same time.
 	setSeed(rdunif(1, 0, asInteger(2^60) - 1)+asInteger(rep));
-	defineConstant("K", 1000);
-	defineConstant("L", 1e6); // total bp length
+
+	// Number of individuals in population
+	defineConstant("N", 1000);
+
+	// Length of sequence (L)
+	defineConstant("L", 1e6);
+
+	// Mutation rate
 	defineConstant("mu", 6.25e-7);
 
 	initializeMutationType("m1", 0.5, "f", 0.0);
@@ -41,23 +37,41 @@ initialize() {
 	initializeRecombinationRate(6.25e-7);
 }
 
+/*
+Setup initial population as two "subgenome populations", each with N individuals.
+Then, allow individuals to be exchanged between subgenome populations with equal
+frequency.
+*/
 1 {
-	sim.addSubpop("p1", K);
-	sim.addSubpop("p2", K);
+	sim.addSubpop("p1", N);
+	sim.addSubpop("p2", N);
 	p1.setMigrationRates(p2, 0.5);
 	p2.setMigrationRates(p1, 0.5);
 }
 
+// Print output every 50 generations.
 late() {
 	if (sim.generation % 50 == 0){
 		catn(sim.generation);
 	}
 }
 
+/*
+Apply bottleneck after the burn-in period has finished.
+The burn-in period is typically 10x the total number of chromosomes in the
+starting population. Since we're modeling a polysomic autotetraploid with 
+1000 individuals, that means that there are 4000 chromosomes and the burn-in
+is 40_000 generations.
+*/
 40000 late() {
 	p1.setSubpopulationSize(asInteger(asFloat(nuBot) * 1000));
 	p2.setSubpopulationSize(asInteger(asFloat(nuBot) * 1000));
 }
+
+/*
+The rest of the code samples individuals at different time periods after the
+bottleneck.
+*/
 
 42000 late() {
 	/*
