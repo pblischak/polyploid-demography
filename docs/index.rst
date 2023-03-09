@@ -11,11 +11,9 @@ in polyploids using dadi. These docs describe several resources:
 First, they present the technical/code-related aspects of the simulations and
 analysis from our associated paper (link/citation below). Second, they describe
 an example analysis of empirical data collected for allotetraploid
-*Capsella bursa-pastoris*. And third, they provide an introductory tutorial
-on how to construct simulations and demographic models for different types of
-polyploids.
-
-We recommend readers start with the :ref:`Tutorial`.
+*Capsella bursa-pastoris*. And third, they provide instructions for how
+to think about parameter conversions for polyploids, as well as a short demo
+of how one could analyze real data stored in a VCF file.
 
 Documentation
 -------------
@@ -26,7 +24,8 @@ Documentation
    simulations
    dadi
    capsella
-   tutorial
+   conversions
+   real_data
 
 ----
 
@@ -37,7 +36,7 @@ History Inference and the Polyploid Continuum. *bioRxiv*:
 `https://doi.org/10.1101/2022.09.15.508148 <https://doi.org/10.1101/2022.09.15.508148>`_.
 
 Indices and tables
-------------------
+~~~~~~~~~~~~~~~~~~
 
 * :ref:`genindex`
 * :ref:`modindex`
