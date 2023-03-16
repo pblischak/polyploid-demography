@@ -16,12 +16,20 @@ Main Scripts
   maximum likelihood parameter estimates under each model, as well as code for
   estimating confidence intervals using the Fisher information Matrix and 
   propogation of uncertainty.
+- ``douglas_et_al_comparison.py``: Code for running a comparison of the
+  ``segtetraploid_bottleneck`` model with the model used in the original
+  Douglas et al. (2015) paper. The comparison is run with both 2D frequency
+  spectra and the collapsed version of the SFS we introduce in our paper.
 
-The SFS data file is named ``Capsella_intergene_4fold_corr_4pop_4_DSFS.fs``. It
-can be read into Python as a ``Spectrum`` object using the code below:
+SFS Data
+--------
+
+The SFS data file is also in the repo and is named
+``Capsella_intergene_4fold_corr_4pop_4_DSFS.fs``. It can be read into Python as
+a ``dadi.Spectrum`` object using the code below:
 
 .. code-block:: python
-   :caption: Read a SFS file into Python as a ``dadi.Spectrum`` object.
+   :caption: Read the *Capsella* SFS file into Python as a ``dadi.Spectrum`` object.
    
    import dadi
    fs = dadi.Spectrum.from_file("Capsella_intergene_4fold_corr_4pop_4_DSFS.fs")

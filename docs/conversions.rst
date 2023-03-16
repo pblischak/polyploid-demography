@@ -6,9 +6,9 @@ Converting Parameter Values
 To best understand the relationship between the units used in forward simulators
 like SLiM, where we simulate the actual number of individuals, generations, etc.,
 the original description of dadi's genetic units in the manual is a good place
-to start: `link <https://dadi.readthedocs.io/en/latest/user-guide/specifying-a-model/>`_
-(see the subsection titled **Units**). In general, the following conversion rules
-described below apply.
+to start: `link <https://dadi.readthedocs.io/en/latest/user-guide/specifying-a-model/#units>`_
+(see the subsection titled **Units**). In general, the conversion rules described
+below apply.
 
 Population sizes
 ----------------
@@ -39,4 +39,27 @@ dadi units is measured as the number of :math:`KN_{ref}` generations.
 Migration/Exchange rates
 ------------------------
 
+Exchange rates are calculated analogously to migration rates, but with some additional
+scaling to account for potential differences in the ploidy of each subgenome.
+For migration rates in diploids, :math:`M_{i \leftarrow j}` represents the population-scaled
+influx of alleles from population :math:`j` into population :math:`i` and is the
+parameter that dadi reports when estimating migration rates in a demographic model.
+To get the per-generation proportion of allelic influx, :math:`m_{i \leftarrow j}`,
+we can divide :math:`M_{i \leftarrow j}` by the number of chromosomes in the
+reference population, which would be :math:`2N_{ref}`.
 
+For homoeologous exchanges, denoted :math:`E_{i \leftrightarrow j}`, the only
+difference in converting from the parameter estimated by dadi to the non-scaled
+version is to take the ploidy level of the subgenomes (or populations) into account.
+To do this, we include and additional factor of :math:`\frac{2}{k_i}`, where :math:`k_i`
+is the ploidy level of subgenome :math:`i`.
+This means that homoeologous exchange rates (and migration rates, too) can still be
+calculated by dividing :math:`E_{i \leftrightarrow j} = 2N_{ref}e_{i \leftrightarrow} j`
+by :math:`2N_{ref}`. However, for populations that are not diploid, the effect of
+the allelic influx must be scaled additionally by :math:`\frac{2}{k_i}`. For diploids,
+this fraction is simply equal to 1, but for a tetraploid, it would be equal to 0.5,
+meaning that the influx of alleles into the tetraploid subgenomes changes the allele
+frequency half as much as it would in a diploid. To put it another way, the same
+proportion of allelic exchange can be happening, so :math:`e_{i \leftrightarrow j}`
+is still the same between two subgenomes, but if one of the subgenomes has a higher
+ploidy level, then the influx is scaled by an additional factor of :math:`\frac{2}{k_i}`.
