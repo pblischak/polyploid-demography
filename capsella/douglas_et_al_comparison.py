@@ -340,7 +340,7 @@ def compare_results():
     ]
     model4 = CbpA_CbpB(p4, (10, 10), pts_l)
 
-    fig = plt.figure(34, figsize=(6, 4), dpi=250)
+    fig = plt.figure(34, figsize=(10, 8), dpi=250)
     fig.clear()
     ax = fig.add_subplot(2, 3, 1)
     dadi.Plotting.plot_single_2d_sfs(
