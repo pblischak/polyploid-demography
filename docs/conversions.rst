@@ -28,13 +28,9 @@ Times
 -----
 
 Times (denoted :math:`T`) in dadi are measured as the number of :math:`2N_{ref}`
-generations for diploids. So, if :math:`N_{ref}` is 10,000 diploid individuals,
-and the generation time is two years, 100,000 years would be 50,000 generations,
-and :math:`T` would be 50,000 / (2 * 10,000) = 2.5. For polyploids, the only thing
-that changes is the multiplier of :math:`N_{ref}`. For example, if the reference
-population is tetraploid, then time is measured as the number of :math:`4N_{ref}`
-generations. In general, if the reference population is a K-ploid, then time in
-dadi units is measured as the number of :math:`KN_{ref}` generations.
+generations. This is regardless of the ploidy level. So, if :math:`N_{ref}` is 
+10,000 diploid individuals and the generation time is two years, 100,000 years 
+would be 50,000 generations and :math:`T` would be 50,000 / (2 * 10,000) = 2.5.
 
 Migration/Exchange rates
 ------------------------
@@ -54,7 +50,7 @@ version is to take the ploidy level of the subgenomes (or populations) into acco
 To do this, we include and additional factor of :math:`\frac{2}{k_i}`, where :math:`k_i`
 is the ploidy level of subgenome :math:`i`.
 This means that homoeologous exchange rates (and migration rates, too) can still be
-calculated by dividing :math:`E_{i \leftrightarrow j} = 2N_{ref}e_{i \leftrightarrow} j`
+calculated by dividing :math:`E_{i \leftrightarrow j} = 2N_{ref}e_{i \leftrightarrow j}`
 by :math:`2N_{ref}`. However, for populations that are not diploid, the effect of
 the allelic influx must be scaled additionally by :math:`\frac{2}{k_i}`. For diploids,
 this fraction is simply equal to 1, but for a tetraploid, it would be equal to 0.5,
