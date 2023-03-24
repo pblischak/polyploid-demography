@@ -85,7 +85,7 @@ for ii in range(1, 3):
     ax.set_xlabel("Sample allele frequency")
 
 fig.axes[1].set_yscale("log")
-fig.axes[1].legend(fontsize="x-small")
+fig.axes[0].legend(fontsize="x-small", loc="upper right")
 
 fig.tight_layout(pad=1)
 
