@@ -29,7 +29,7 @@ genotype (GT) field.
    popinfo_file = "popinfo.txt"
 
    # Read the VCF data into a data dictionary using the population info
-   data_dict = dadi.Misc.data_dict_from_vcf(
+   data_dict = dadi.Misc.make_data_dict_vcf(
        vcf_file,
        popinfo_file
    )
